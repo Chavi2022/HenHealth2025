@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hen Health - Kingdom of Healing (English)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .login-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-field {
+            margin-bottom: 20px;
+            flex: 1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #784315;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #8b7355;
+            background-color: #f9f3e3;
+            color: #3a2e1f;
+            font-family: 'MedievalSharp', cursive, serif;
+            border-radius: 4px;
+        }
+        
+        .required-field::after {
+            content: "*";
+            color: #933;
+            margin-left: 3px;
+        }
+        
+        .btn-primary {
+            background-color: #4a7ab7;
+            color: white;
+            font-weight: bold;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1E4878;
+        }
+        
+        .required-note {
+            text-align: right;
+            font-size: 14px;
+            color: #933;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body class="medieval-theme">
+    <a href="{{ url_for('index') }}" class="back-button"><i class="fas fa-arrow-left"></i> Return to the Kingdom Gates</a>
+    
+    <div class="login-container parchment">
+        <div class="scroll-decoration top"></div>
+        
+        <picture class="logo-container">
+            <source srcset="{{ url_for('static', filename='images/henhealth.webp') }}" type="image/webp">
+            <img src="{{ url_for('static', filename='images/henhealth.png') }}" alt="Hen Health Crest" class="logo">
+        </picture>
+
+        <h1>Hen Health</h1>
+        <h2>Kingdom of Healing</h2>
+        
+        <div class="required-note">* Required fields</div>
+        
+        <div class="login-form">
+            <form method="post" action="{{ url_for('login') }}" onsubmit="return showLoadingScreen()">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="name" class="required-field">Your Name</label>
+                        <input type="text" id="name" name="user_name" required placeholder="Enter your name">
+                    </div>
+                    
+                    <div class="form-field">
+                        <label for="ailment" class="required-field">Your Ailment</label>
+                        <textarea id="ailment" name="user_ailment" required rows="3" placeholder="Describe the malady that troubles thee"></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-field">
+                    <button type="submit" class="btn-primary">Seek the Physician's Counsel</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="medieval-footer">
+            <p>By Royal Decree of the Realm of Healing</p>
+        </div>
+        
+        <div class="scroll-decoration bottom"></div>
+    </div>
+    
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen medieval">
+        <div class="spinner medieval-spinner"></div>
+        <p id="loading-text">The physician is being summoned...</p>
+    </div>
+    
+    <script>
+        function showLoadingScreen() {
+            document.getElementById('loading-screen').style.display = 'flex';
+            return true;
+        }
+    </script>
+</body>
+</html>
