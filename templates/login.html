@@ -158,6 +158,66 @@
             document.getElementById('loading-screen').style.display = 'flex';
             return true;
         }
+        function validateInput(input) {
+        // Skip validation for optional fields
+        if (!input.hasAttribute('required')) return true;
+
+        // Custom validation based on input type
+        if (input.validity.valueMissing) {
+            showError(input, 'This field is required');
+            return false;
+        }
+
+        // Age validation
+        if (input.id === 'age') {
+            const age = parseInt(input.value);
+            if (isNaN(age) || age < 1 || age > 120) {
+                showError(input, 'Please enter a valid age between 1 and 120');
+                return false;
+            }
+        }
+
+        // Height and weight validation (optional but recommended)
+        if (input.id === 'height' || input.id === 'weight') {
+            const value = input.value.trim();
+            const validFormats = [
+                /^\d+(\.\d+)?\s*(?:cm|in|inches|foot|feet|')$/i,  // With units
+                /^\d+(\.\d+)?$/  // Numeric without units
+            ];
+            
+            if (value && !validFormats.some(regex => regex.test(value))) {
+                showError(input, `Please enter a valid ${input.id} (e.g., 170 cm, 5'10")`);
+                return false;
+            }
+        }
+
+        clearError(input);
+        return true;
+    }
+    function showError(input, message) {
+        // Remove existing error
+        clearError(input);
+        
+        // Create error message element
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = message;
+        errorDiv.style.color = '#933';
+        errorDiv.style.fontSize = '0.8em';
+        errorDiv.style.marginTop = '5px';
+        
+        // Insert error message after the input
+        input.parentNode.insertBefore(errorDiv, input.nextSibling);
+        input.classList.add('input-error');
+    }
+
+    function clearError(input) {
+        input.classList.remove('input-error');
+        const errorMessage = input.parentNode.querySelector('.error-message');
+        if (errorMessage) {
+            errorMessage.remove();
+        }
+    }
     </script>
 </body>
 </html>

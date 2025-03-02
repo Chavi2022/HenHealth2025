@@ -385,7 +385,78 @@
                     });
                 }
             }
+            function sendMessage() {
+    const message = userInput.value.trim();
+    
+    if (message) {
+        addMessage('user', message);
+        consultationHistory.push({role: 'patient', text: message});
+        userInput.value = '';
+        
+        showLoading();
+        
+        fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: message,
+                user_id: userId,
+                user_name: userName,
+                audio_enabled: audioEnabled
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            addMessage('ai', data.message);
+            consultationHistory.push({role: 'physician', text: data.message});
             
+            // Handle reset suggestion
+            if (data.is_reset_suggested) {
+                // Add special handling for reset options
+                switch (message) {
+                    case '1':
+                        // Restart consultation completely
+                        window.location.reload();
+                        break;
+                    case '2':
+                        // Go back to root of decision tree
+                        predictionState = "root";
+                        break;
+                    case '3':
+                        // Transition to general health advice
+                        predictionState = "general_health";
+                        break;
+                    default:
+                        // If invalid reset option, treat as a normal response
+                        break;
+                }
+            }
+            
+            // Play audio if available
+            if (data.audio && audioEnabled) {
+                playAudio(data.audio);
+            }
+            
+            // Check if this is a diagnosis (end of decision tree)
+            if (data.is_diagnosis) {
+                endChatButton.classList.add('highlight');
+            }
+            
+            hideLoading();
+            
+            // Auto-scroll to the bottom of the chat
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        })
+        .catch(error => {
+            console.error('Error sending message:', error);
+            addMessage('error', 'An error occurred. Please try again.');
+            hideLoading();
+        });
+    }
+}
+
             // Function to toggle speech recognition
             function toggleSpeechRecognition() {
                 if (!speechRecognitionSupported) {
