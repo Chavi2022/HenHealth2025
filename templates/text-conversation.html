@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Conversation</title>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Text Conversation in Progress</h1>
+    <p>Calling: <strong><span id="to-number">{{ to_number }}</span></strong></p>
+    <p>Message SID: <strong><span id="message-sid">{{ message_sid }}</span></strong></p>
+    
+    <div id="conversation"></div>
+
+    <script>
+        const messageSid = '{{ message_sid }}';
+        const conversation = document.getElementById('conversation');
+
+        const eventSource = new EventSource(`/stream/${messageSid}`);
+
+        eventSource.onmessage = function(event) {
+            console.log(event.data);
+            const message = JSON.parse(event.data);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${message.speaker}`;
+            messageDiv.innerHTML = `<strong>${message.speaker === 'ai' ? 'AI' : 'User'}:</strong> ${message.text}`;
+            conversation.appendChild(messageDiv);
+            conversation.scrollTop = conversation.scrollHeight;
+        };
+
+        eventSource.onerror = function(error) {
+            console.error('EventSource failed:', error);
+            eventSource.close();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Here Ye Health - Kingdom of Healing</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body class="medieval-theme">
+    <a href="{{ url_for('index') }}" class="back-button"><i class="fas fa-arrow-left"></i> Return to the Kingdom Gates</a>
+    
+    <div class="login-container parchment">
+        <div class="scroll-decoration top"></div>
+        
+        <h1>Here Ye Health</h1>
+        <h2>Royal Physician Consultation</h2>
+        
+        <div class="login-form">
+            <form method="post" onsubmit="return showLoadingScreen()">
+                <div class="form-field">
+                    <label for="user_name">How may we address thee, good visitor?</label>
+                    <input type="text" id="user_name" name="user_name" required placeholder="Enter thy name">
+                </div>
+                
+                <div class="form-field">
+                    <label>Choose thy mother tongue:</label>
+                    <div class="language-selection">
+                        <button type="button" class="language-button" data-lang="en">English</button>
+                        <button type="button" class="language-button" data-lang="es">Español</button>
+                        <button type="button" class="language-button" data-lang="fr">Français</button>
+                        <button type="button" class="language-button" data-lang="de">Deutsch</button>
+                        <button type="button" class="language-button" data-lang="it">Italiano</button>
+                        <button type="button" class="language-button" data-lang="pt">Português</button>
+                    </div>
+                </div>
+                
+                <div class="form-field">
+                    <button type="submit" class="btn-primary">Seek Consultation</button>
+                </div>
+                
+                <!-- Hidden input for language -->
+                <input type="hidden" name="language" id="language-input" value="en">
+            </form>
+        </div>
+        
+        <div class="medieval-footer">
+            <p>By Royal Decree, healing for all subjects of the realm</p>
+        </div>
+        
+        <div class="scroll-decoration bottom"></div>
+    </div>
+    
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen medieval">
+        <div class="spinner medieval-spinner"></div>
+        <p id="loading-text">The physician is being summoned...</p>
+    </div>
+    
+    <script>
+        // Select language and store in localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const languageButtons = document.querySelectorAll('.language-button');
+            const languageInput = document.getElementById('language-input');
+            
+            // Set initial value from localStorage or default to English
+            const storedLang = localStorage.getItem('language') || 'en';
+            languageInput.value = storedLang;
+            
+            // Add active class to the stored language button
+            const activeButton = document.querySelector(`.language-button[data-lang="${storedLang}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+            
+            languageButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    languageButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Store selected language
+                    const lang = this.getAttribute('data-lang');
+                    localStorage.setItem('language', lang);
+                    languageInput.value = lang;
+                });
+            });
+        });
+        
+        function showLoadingScreen() {
+            document.getElementById('loading-screen').style.display = 'flex';
+            return true;
+        }
+    </script>
+</body>
+</html>

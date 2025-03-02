@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Here Ye Health - Kingdom of Healing</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+</head>
+<body class="medieval-theme">
+    <div class="login-container parchment">
+        <div class="scroll-decoration top"></div>
+        
+        <h1>Here Ye Health</h1>
+        <h2>Kingdom of Healing</h2>
+        
+        <div class="welcome-text">
+            <p>Oyez, Oyez! By royal decree, His Majesty's court physicians are now available for consultation.</p>
+            <p>Step forth and select thy language to commence thy journey to wellness.</p>
+        </div>
+        
+        <div class="language-selection">
+            <a href="{{ url_for('login') }}" class="language-button" data-lang="en">English</a>
+            <a href="{{ url_for('login') }}" class="language-button" data-lang="es">Español</a>
+            <a href="{{ url_for('login') }}" class="language-button" data-lang="fr">Français</a>
+            <a href="{{ url_for('login') }}" class="language-button" data-lang="de">Deutsch</a>
+            <a href="{{ url_for('login') }}" class="language-button" data-lang="it">Italiano</a>
+            <a href="{{ url_for('login') }}" class="language-button" data-lang="pt">Português</a>
+        </div>
+        
+        <div class="medieval-footer">
+            <p>Anno Domini MMXXIV - By Royal Decree</p>
+        </div>
+        
+        <div class="scroll-decoration bottom"></div>
+    </div>
+    
+    <script>
+        // Store language selection in localStorage and redirect
+        document.addEventListener('DOMContentLoaded', function() {
+            const languageButtons = document.querySelectorAll('.language-button');
+            
+            languageButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Store selected language
+                    const lang = this.getAttribute('data-lang');
+                    localStorage.setItem('language', lang);
+                    
+                    // Redirect to login page
+                    window.location.href = this.href;
+                });
+            });
+        });
+    </script>
+</body>
+</html>

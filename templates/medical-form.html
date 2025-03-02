@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Records of Treatment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body class="medieval-theme">
+    <!-- Back Button -->
+    <a href="{{ url_for('index') }}" id="back-button" class="back-button">
+        <i class="fas fa-arrow-left"></i> Return to the Kingdom
+    </a>
+
+    <div class="container parchment">
+        <div class="scroll-decoration left"></div>
+        <div class="scroll-decoration right"></div>
+        
+        <h1>Royal Records of Treatment</h1>
+        <h3>By Decree of His Majesty's Court Physicians</h3>
+
+        <!-- Patient Information -->
+        <div class="patient-info">
+            <h2>Details of the Subject</h2>
+            <table class="medieval-table">
+                <tr>
+                    <td><strong>Given Name:</strong></td>
+                    <td id="first-name">{{ record.name }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Chronological Medical Records Summary -->
+        <div class="record-summary">
+            <h2>Chronicles of Ailments and Treatments</h2>
+            
+            {% if record.entries and record.entries|length > 0 %}
+                <div class="medieval-entries">
+                    {% for entry in record.entries %}
+                        <div class="medical-entry">
+                            <div class="entry-date">{{ entry.time }}</div>
+                            <div class="entry-diagnosis">
+                                <strong>Diagnosis:</strong> {{ entry.diagnosis }}
+                            </div>
+                            <div class="entry-conversation">
+                                <strong>Consultation Notes:</strong>
+                                <ul>
+                                    {% for line in entry.conversation %}
+                                        <li>{{ line }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-entries">
+                    <p>No records exist in the royal archives for this subject.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="medieval-footer">
+            <p>Sealed with the Royal Physician's Stamp</p>
+            <div class="royal-seal"></div>
+        </div>
+    </div>
+
+    <div id="loading-screen" class="loading-screen medieval">
+        <div class="spinner medieval-spinner"></div>
+        <p id="loading-text">Fetching from the royal archives...</p>
+    </div>
+
+    <script>
+        document.getElementById('back-button').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('loading-screen').style.display = 'flex';
+            setTimeout(function() {
+                window.location.href = e.target.closest('a').href;
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,373 @@
+/* Medieval theme CSS to add to your styles.css */
+
+/* Font and Global Styles */
+.medieval-theme {
+    font-family: 'MedievalSharp', cursive, serif;
+    background-color: #5a4d41;
+    background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+    color: #3a2e1f;
+}
+
+/* Parchment Container */
+.parchment {
+    background-color: #f2e8c9;
+    background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
+    border: none;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    position: relative;
+    padding: 40px 30px;
+    border-radius: 5px;
+}
+
+.parchment:before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border: 2px solid #8b7355;
+    border-radius: 3px;
+    pointer-events: none;
+}
+
+/* Scroll Decorations */
+.scroll-decoration {
+    position: absolute;
+    width: 40px;
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.scroll-decoration.left {
+    left: 10px;
+    top: 0;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 600"><path d="M70,0 Q40,150 70,300 Q40,450 70,600" stroke="%238b7355" fill="none" stroke-width="3"/></svg>');
+}
+
+.scroll-decoration.right {
+    right: 10px;
+    top: 0;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 600"><path d="M30,0 Q60,150 30,300 Q60,450 30,600" stroke="%238b7355" fill="none" stroke-width="3"/></svg>');
+}
+
+.scroll-decoration.top, .scroll-decoration.bottom {
+    width: 100%;
+    height: 30px;
+    left: 0;
+}
+
+.scroll-decoration.top {
+    top: 5px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 100"><path d="M0,70 Q200,40 400,70 Q600,40 800,70" stroke="%238b7355" fill="none" stroke-width="3"/></svg>');
+}
+
+.scroll-decoration.bottom {
+    bottom: 5px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 100"><path d="M0,30 Q200,60 400,30 Q600,60 800,30" stroke="%238b7355" fill="none" stroke-width="3"/></svg>');
+}
+
+/* Headers */
+.medieval-theme h1, .medieval-theme h2, .medieval-theme h3 {
+    font-family: 'MedievalSharp', cursive, serif;
+    color: #784315;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+}
+
+.medieval-theme h1 {
+    font-size: 36px;
+    margin-top: 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.medieval-theme h2 {
+    font-size: 24px;
+    font-weight: 400;
+    color: #8b5a2b;
+}
+
+/* Login Container Specific */
+.login-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 40px;
+}
+
+.medieval-footer {
+    text-align: center;
+    font-style: italic;
+    color: #8b5a2b;
+    margin-top: 40px;
+    font-size: 14px;
+}
+
+/* Form Elements */
+.medieval-theme input[type="text"], 
+.medieval-theme input[type="password"],
+.medieval-theme select,
+.medieval-theme textarea {
+    background-color: #f9f3e3;
+    border: 2px solid #8b7355;
+    color: #3a2e1f;
+    padding: 12px 15px;
+    font-family: 'MedievalSharp', cursive, serif;
+    font-size: 16px;
+    border-radius: 0;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.medieval-theme input:focus, 
+.medieval-theme select:focus, 
+.medieval-theme textarea:focus {
+    outline: none;
+    border-color: #784315;
+    box-shadow: 0 0 5px rgba(120, 67, 21, 0.5);
+}
+
+.medieval-theme label {
+    color: #784315;
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* Buttons */
+.medieval-theme .btn-primary, 
+.medieval-theme button[type="submit"],
+.medieval-theme .language-button {
+    background-color: #8b5a2b;
+    color: #f2e8c9;
+    border: 2px solid #784315;
+    font-family: 'MedievalSharp', cursive, serif;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 0;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.medieval-theme .btn-primary:hover, 
+.medieval-theme button[type="submit"]:hover,
+.medieval-theme .language-button:hover,
+.medieval-theme .language-button.active {
+    background-color: #6b4423;
+    transform: translateY(-2px);
+    box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+}
+
+.medieval-theme .btn-danger {
+    background-color: #933;
+    border-color: #822;
+}
+
+.medieval-theme .language-button {
+    margin: 5px;
+    padding: 8px 15px;
+    font-size: 14px;
+}
+
+.medieval-theme .language-button.active {
+    background-color: #6b4423;
+    border-color: #4d3319;
+}
+
+/* Chat Specific */
+.medieval-theme .chat-container {
+    max-width: 800px;
+    height: 80vh;
+    margin: 40px auto;
+}
+
+.medieval-theme .chat-header {
+    background-color: transparent;
+    border-bottom: 2px solid #8b7355;
+    padding: 15px;
+    position: relative;
+}
+
+.medieval-theme .chat-messages {
+    background-color: transparent;
+    padding: 20px;
+}
+
+.medieval-theme .chat-input {
+    background-color: transparent;
+    border-top: 2px solid #8b7355;
+    padding: 15px;
+}
+
+.medieval-theme .chat-input input {
+    background-color: #f9f3e3;
+    border: 2px solid #8b7355;
+}
+
+.medieval-theme .message-content {
+    background-color: #f9f3e3;
+    border: 1px solid #8b7355;
+    border-radius: 0;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.medieval-theme .message.ai .message-content {
+    background-color: #e6dfc8;
+    border-left: 3px solid #8b5a2b;
+}
+
+.medieval-theme .message.user .message-content {
+    background-color: #e8e1c8;
+    border-right: 3px solid #6b4423;
+}
+
+.medieval-theme .message-avatar {
+    background-color: #d9cba8;
+    color: #8b5a2b;
+    border: 2px solid #8b7355;
+}
+
+.medieval-theme .message.ai .message-avatar {
+    background-color: #d9cba8;
+    color: #8b5a2b;
+}
+
+/* Loading Screen */
+.medieval-theme .loading-screen.medieval {
+    background-color: rgba(90, 77, 65, 0.8);
+}
+
+.medieval-theme .medieval-spinner {
+    border: 8px solid #d9cba8;
+    border-top: 8px solid #8b5a2b;
+}
+
+.medieval-theme #loading-text {
+    font-family: 'MedievalSharp', cursive, serif;
+    color: #f2e8c9;
+    font-size: 20px;
+}
+
+/* Audio Toggle */
+.medieval-theme .switch {
+    border: 2px solid #8b7355;
+}
+
+.medieval-theme .slider {
+    background-color: #d9cba8;
+}
+
+.medieval-theme input:checked + .slider {
+    background-color: #8b5a2b;
+}
+
+/* Form Sections */
+.form-field {
+    margin-bottom: 25px;
+}
+
+.language-selection {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+/* Chat Actions */
+.chat-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 15px;
+    border-top: 2px solid #8b7355;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .medieval-theme h1 {
+        font-size: 28px;
+    }
+    
+    .medieval-theme h2 {
+        font-size: 20px;
+    }
+    
+    .language-selection {
+        flex-direction: column;
+    }
+    
+    .medieval-theme .language-button {
+        width: 100%;
+        margin: 5px 0;
+    }
+}
+/* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Medieval Theme */
+.medieval-theme {
+    font-family: 'MedievalSharp', cursive, serif;
+    background-color: #5a4d41;
+    background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+    color: #3a2e1f;
+    line-height: 1.6;
+}
+
+/* Parchment Container */
+.parchment {
+    background-color: #f2e8c9;
+    background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
+    border: none;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    position: relative;
+    padding: 40px 30px;
+    border-radius: 5px;
+    margin: 40px auto;
+    max-width: 900px;
+}
+
+.parchment:before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border: 2px solid #8b7355;
+    border-radius: 3px;
+    pointer-events: none;
+}
+
+/* Scroll Decorations */
+.scroll-decoration {
+    position: absolute;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.scroll-decoration.left, .scroll-decoration.right {
+    width: 40px;
+    height: 100%;
+    top: 0;
+}
+
+.scroll-decoration.left {
+    left: 10px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 600"><path d="M70,0 Q40,150 70,300 Q40,450 70,600" stroke="%238b7355" fill="none" stroke-width="3"/></svg>');
+}
+
+.scroll-decoration.right {
+    right: 10px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 600"><path d="M30,0 Q60,150 30,300 Q60,450 30,600" stroke="%238b7355" fill="none" stroke-width="3"/></svg>');
+}

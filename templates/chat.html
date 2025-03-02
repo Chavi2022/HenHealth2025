@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Here Ye Health - Royal Physician Consultation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body class="medieval-theme">
+    <div class="container chat-container parchment">
+        <div class="scroll-decoration left"></div>
+        <div class="scroll-decoration right"></div>
+        
+        <div class="chat-header">
+            <h2>Royal Physician Consultation</h2>
+            
+            <div class="language-selector">
+                <select id="language-select">
+                    <option value="en">English</option>
+                    <option value="es">Español (Spanish)</option>
+                    <option value="fr">Français (French)</option>
+                    <option value="de">Deutsch (German)</option>
+                    <option value="it">Italiano (Italian)</option>
+                    <option value="pt">Português (Portuguese)</option>
+                </select>
+            </div>
+            
+            <div class="audio-toggle">
+                <label for="audio-toggle-switch">Voice of the Physician</label>
+                <label class="switch">
+                    <input type="checkbox" id="audio-toggle-switch" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+        
+        <div id="chat-messages" class="chat-messages">
+            <!-- Messages will appear here -->
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Speak thy concerns...">
+            <button id="send-button" class="medieval-button">
+                <i class="fas fa-feather-alt"></i>
+            </button>
+        </div>
+        
+        <div class="chat-actions">
+            <button id="end-chat-button" class="btn-danger">End Consultation</button>
+        </div>
+    </div>
+    
+    <audio id="audio-player" style="display: none;"></audio>
+    
+    <div id="loading-screen" class="loading-screen medieval">
+        <div class="spinner medieval-spinner"></div>
+        <p id="loading-text">The physician is contemplating...</p>
+    </div>
+    
+    <script>
+        // Store user info from the server
+        const userName = "{{ user_name }}";
+        const userId = "{{ user_id }}";
+        
+        // Chat functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chat-messages');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const endChatButton = document.getElementById('end-chat-button');
+            const languageSelect = document.getElementById('language-select');
+            const audioToggleSwitch = document.getElementById('audio-toggle-switch');
+            const audioPlayer = document.getElementById('audio-player');
+            const loadingScreen = document.getElementById('loading-screen');
+            
+            // Set initial language from localStorage
+            let currentLanguage = localStorage.getItem('language') || 'en';
+            languageSelect.value = currentLanguage;
+            
+            let audioEnabled = true;
+            
+            // Initialize the chat
+            startChat();
+            
+            // Function to start chat session
+            function startChat() {
+                showLoading();
+                
+                fetch('/api/start_chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        user_name: userName,
+                        language: currentLanguage,
+                        audio_enabled: audioEnabled
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    addMessage('ai', data.message);
+                    
+                    // Play audio if available
+                    if (data.audio && audioEnabled) {
+                        playAudio(data.audio);
+                    }
+                    
+                    hideLoading();
+                })
+                .catch(error => {
+                    console.error('Error starting chat:', error);
+                    hideLoading();
+                });
+            }
+            
+            // Function to send user message
+            function sendMessage() {
+                const message = userInput.value.trim();
+                
+                if (message) {
+                    addMessage('user', message);
+                    userInput.value = '';
+                    
+                    showLoading();
+                    
+                    fetch('/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: message,
+                            user_id: userId,
+                            user_name: userName,
+                            language: currentLanguage,
+                            audio_enabled: audioEnabled
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        addMessage('ai', data.message);
+                        
+                        // Play audio if available
+                        if (data.audio && audioEnabled) {
+                            playAudio(data.audio);
+                        }
+                        
+                        // Check if this is a diagnosis (end of decision tree)
+                        if (data.is_diagnosis) {
+                            endChatButton.classList.add('highlight');
+                        }
+                        
+                        hideLoading();
+                    })
+                    .catch(error => {
+                        console.error('Error sending message:', error);
+                        addMessage('error', 'A grave misfortune has occurred. The physician\'s words were lost to the winds.');
+                        hideLoading();
+                    });
+                }
+            }
+            
+            // Function to play audio from base64
+            function playAudio(audioBase64) {
+                const audioSrc = 'data:audio/mp3;base64,' + audioBase64;
+                audioPlayer.src = audioSrc;
+                audioPlayer.play();
+            }
+            
+            // Function to add a message to the chat
+            function addMessage(sender, message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+                
+                if (sender === 'ai') {
+                    messageDiv.innerHTML = `
+                        <div class="message-avatar">
+                            <i class="fas fa-user-md"></i> <!-- Medieval physician icon -->
+                        </div>
+                        <div class="message-content">${message}</div>
+                    `;
+                } else if (sender === 'user') {
+                    messageDiv.innerHTML = `
+                        <div class="message-content">${message}</div>
+                        <div class="message-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    `;
+                } else {
+                    // Error message
+                    messageDiv.innerHTML = `
+                        <div class="message-content error">${message}</div>
+                    `;
+                }
+                
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Function to handle ending the chat
+            function endChat() {
+                showLoading();
+                
+                fetch('/api/end_chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        window.location.href = data.redirect;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error ending chat:', error);
+                    hideLoading();
+                    alert('There was an error ending the consultation. Please try again.');
+                });
+            }
+            
+            // Function to show loading screen
+            function showLoading() {
+                loadingScreen.style.display = 'flex';
+            }
+            
+            // Function to hide loading screen
+            function hideLoading() {
+                loadingScreen.style.display = 'none';
+            }
+            
+            // Event Listeners
+            sendButton.addEventListener('click', sendMessage);
+            
+            userInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            endChatButton.addEventListener('click', endChat);
+            
+            languageSelect.addEventListener('change', function() {
+                currentLanguage = this.value;
+                localStorage.setItem('language', currentLanguage);
+                // You could restart the chat here or just change the language for upcoming messages
+            });
+            
+            audioToggleSwitch.addEventListener('change', function() {
+                audioEnabled = this.checked;
+            });
+        });
+    </script>
+</body>
+</html>
