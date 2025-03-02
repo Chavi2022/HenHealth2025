@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
 </head>
 <body class="medieval-theme">
     <div class="container chat-container parchment">
@@ -27,6 +28,12 @@
                 </select>
             </div>
             
+            <div class="consultation-mode">
+                <span>Consultation Mode:</span>
+                <button id="text-mode-btn" class="mode-btn active">Text Scroll</button>
+                <button id="voice-mode-btn" class="mode-btn">Voice of Physician</button>
+            </div>
+            
             <div class="audio-toggle">
                 <label for="audio-toggle-switch">Voice of the Physician</label>
                 <label class="switch">
@@ -42,12 +49,18 @@
         
         <div class="chat-input">
             <input type="text" id="user-input" placeholder="Speak thy concerns...">
+            <button id="mic-button" class="medieval-button mic-button">
+                <i class="fas fa-microphone"></i>
+            </button>
             <button id="send-button" class="medieval-button">
                 <i class="fas fa-feather-alt"></i>
             </button>
         </div>
         
         <div class="chat-actions">
+            <button id="export-record-btn" class="medieval-button">
+                <i class="fas fa-scroll"></i> Export Medical Record
+            </button>
             <button id="end-chat-button" class="btn-danger">End Consultation</button>
         </div>
     </div>
@@ -57,6 +70,23 @@
     <div id="loading-screen" class="loading-screen medieval">
         <div class="spinner medieval-spinner"></div>
         <p id="loading-text">The physician is contemplating...</p>
+    </div>
+    
+    <!-- Medical Record Export Preview -->
+    <div id="export-preview" class="export-preview">
+        <div id="export-content" class="parchment">
+            <h2>Royal Medical Record</h2>
+            <div id="patient-info"></div>
+            <div id="record-content"></div>
+            <div class="medieval-footer">
+                <p>Sealed with the Royal Physician's Stamp</p>
+                <div class="royal-seal"></div>
+            </div>
+        </div>
+        <div class="export-actions">
+            <button id="download-png" class="medieval-button">Download as Scroll</button>
+            <button id="close-preview" class="btn-danger">Close</button>
+        </div>
     </div>
     
     <script>
@@ -74,15 +104,38 @@
             const audioToggleSwitch = document.getElementById('audio-toggle-switch');
             const audioPlayer = document.getElementById('audio-player');
             const loadingScreen = document.getElementById('loading-screen');
+            const textModeBtn = document.getElementById('text-mode-btn');
+            const voiceModeBtn = document.getElementById('voice-mode-btn');
+            const exportRecordBtn = document.getElementById('export-record-btn');
+            const exportPreview = document.getElementById('export-preview');
+            const closePreviewBtn = document.getElementById('close-preview');
+            const downloadPngBtn = document.getElementById('download-png');
+            const micButton = document.getElementById('mic-button');
             
             // Set initial language from localStorage
             let currentLanguage = localStorage.getItem('language') || 'en';
             languageSelect.value = currentLanguage;
             
             let audioEnabled = true;
+            let consultationHistory = [];
             
             // Initialize the chat
             startChat();
+            
+            // Consultation mode toggle
+            textModeBtn.addEventListener('click', function() {
+                textModeBtn.classList.add('active');
+                voiceModeBtn.classList.remove('active');
+                audioEnabled = false;
+                audioToggleSwitch.checked = false;
+            });
+            
+            voiceModeBtn.addEventListener('click', function() {
+                voiceModeBtn.classList.add('active');
+                textModeBtn.classList.remove('active');
+                audioEnabled = true;
+                audioToggleSwitch.checked = true;
+            });
             
             // Function to start chat session
             function startChat() {
@@ -103,6 +156,7 @@
                 .then(response => response.json())
                 .then(data => {
                     addMessage('ai', data.message);
+                    consultationHistory.push({role: 'physician', text: data.message});
                     
                     // Play audio if available
                     if (data.audio && audioEnabled) {
@@ -123,6 +177,7 @@
                 
                 if (message) {
                     addMessage('user', message);
+                    consultationHistory.push({role: 'patient', text: message});
                     userInput.value = '';
                     
                     showLoading();
@@ -143,6 +198,7 @@
                     .then(response => response.json())
                     .then(data => {
                         addMessage('ai', data.message);
+                        consultationHistory.push({role: 'physician', text: data.message});
                         
                         // Play audio if available
                         if (data.audio && audioEnabled) {
@@ -171,6 +227,39 @@
                 audioPlayer.play();
             }
             
+            // Function to make text readable with hover and click
+            function makeTextReadable(element) {
+                const text = element.textContent;
+                const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+                
+                element.innerHTML = '';
+                sentences.forEach(sentence => {
+                    const sentenceSpan = document.createElement('span');
+                    sentenceSpan.className = 'readable-sentence';
+                    sentenceSpan.textContent = sentence;
+                    sentenceSpan.style.textDecoration = 'underline';
+                    sentenceSpan.style.cursor = 'pointer';
+                    
+                    sentenceSpan.addEventListener('click', function() {
+                        if (!this.dataset.reading) {
+                            this.dataset.reading = 'true';
+                            this.style.color = '#8b5a2b';
+                            
+                            if (audioEnabled) {
+                                // Here we would normally call text-to-speech API
+                                // For demo, we'll just simulate with a timeout
+                                setTimeout(() => {
+                                    delete this.dataset.reading;
+                                    this.style.color = '';
+                                }, 2000);
+                            }
+                        }
+                    });
+                    
+                    element.appendChild(sentenceSpan);
+                });
+            }
+            
             // Function to add a message to the chat
             function addMessage(sender, message) {
                 const messageDiv = document.createElement('div');
@@ -183,6 +272,10 @@
                         </div>
                         <div class="message-content">${message}</div>
                     `;
+                    
+                    // Make physician's text readable after it's added
+                    const contentDiv = messageDiv.querySelector('.message-content');
+                    makeTextReadable(contentDiv);
                 } else if (sender === 'user') {
                     messageDiv.innerHTML = `
                         <div class="message-content">${message}</div>
@@ -227,6 +320,46 @@
                 });
             }
             
+            // Function to export medical record
+            function exportMedicalRecord() {
+                // Populate the export preview
+                const patientInfo = document.getElementById('patient-info');
+                const recordContent = document.getElementById('record-content');
+                
+                patientInfo.innerHTML = `
+                    <h3>Patient: ${userName}</h3>
+                    <p>Date: ${new Date().toLocaleDateString('en-US', { 
+                        day: 'numeric', 
+                        month: 'long', 
+                        year: 'numeric' 
+                    })}</p>
+                `;
+                
+                recordContent.innerHTML = '';
+                consultationHistory.forEach(entry => {
+                    const entryDiv = document.createElement('div');
+                    entryDiv.className = `record-entry ${entry.role}`;
+                    entryDiv.innerHTML = `
+                        <strong>${entry.role === 'physician' ? 'Physician' : 'Patient'}:</strong>
+                        <span>${entry.text}</span>
+                    `;
+                    recordContent.appendChild(entryDiv);
+                });
+                
+                // Show the export preview
+                exportPreview.style.display = 'flex';
+            }
+            
+            // Function to download as PNG
+            function downloadAsPNG() {
+                html2canvas(document.getElementById('export-content')).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `medical-record-${userName}-${new Date().toISOString().slice(0,10)}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                });
+            }
+            
             // Function to show loading screen
             function showLoading() {
                 loadingScreen.style.display = 'flex';
@@ -235,6 +368,89 @@
             // Function to hide loading screen
             function hideLoading() {
                 loadingScreen.style.display = 'none';
+            }
+            
+            // Speech Recognition Setup
+            let recognition = null;
+            let isListening = false;
+            
+            // Initialize speech recognition if supported
+            function initSpeechRecognition() {
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    recognition = new SpeechRecognition();
+                    recognition.continuous = false;
+                    recognition.interimResults = true;
+                    recognition.lang = languageSelect.value; // Set the language
+                    
+                    recognition.onstart = function() {
+                        isListening = true;
+                        micButton.classList.add('listening');
+                        micButton.querySelector('i').className = 'fas fa-stop';
+                    };
+                    
+                    recognition.onresult = function(event) {
+                        let interimTranscript = '';
+                        let finalTranscript = '';
+                        
+                        for (let i = event.resultIndex; i < event.results.length; ++i) {
+                            if (event.results[i].isFinal) {
+                                finalTranscript += event.results[i][0].transcript;
+                            } else {
+                                interimTranscript += event.results[i][0].transcript;
+                            }
+                        }
+                        
+                        // Show interim results in the input field
+                        userInput.value = finalTranscript || interimTranscript;
+                    };
+                    
+                    recognition.onend = function() {
+                        isListening = false;
+                        micButton.classList.remove('listening');
+                        micButton.querySelector('i').className = 'fas fa-microphone';
+                        
+                        // If we have a final result, send the message
+                        if (userInput.value.trim()) {
+                            // Short delay to allow user to see what was recognized
+                            setTimeout(() => {
+                                sendMessage();
+                            }, 500);
+                        }
+                    };
+                    
+                    recognition.onerror = function(event) {
+                        console.error('Speech recognition error:', event.error);
+                        isListening = false;
+                        micButton.classList.remove('listening');
+                        micButton.querySelector('i').className = 'fas fa-microphone';
+                    };
+                    
+                    return true;
+                } else {
+                    console.log('Speech recognition not supported in this browser');
+                    micButton.style.display = 'none';
+                    return false;
+                }
+            }
+            
+            // Initialize speech recognition
+            const speechRecognitionSupported = initSpeechRecognition();
+            
+            // Toggle speech recognition
+            function toggleSpeechRecognition() {
+                if (!speechRecognitionSupported) {
+                    alert('Speech recognition is not supported in your browser.');
+                    return;
+                }
+                
+                if (isListening) {
+                    recognition.stop();
+                } else {
+                    userInput.value = '';
+                    recognition.lang = languageSelect.value; // Update language before starting
+                    recognition.start();
+                }
             }
             
             // Event Listeners
@@ -246,17 +462,38 @@
                 }
             });
             
+            micButton.addEventListener('click', toggleSpeechRecognition);
+            
             endChatButton.addEventListener('click', endChat);
             
             languageSelect.addEventListener('change', function() {
                 currentLanguage = this.value;
                 localStorage.setItem('language', currentLanguage);
+                
+                // Update speech recognition language if initialized
+                if (recognition) {
+                    recognition.lang = currentLanguage;
+                }
+                
                 // You could restart the chat here or just change the language for upcoming messages
             });
             
             audioToggleSwitch.addEventListener('change', function() {
                 audioEnabled = this.checked;
+                if (audioEnabled) {
+                    voiceModeBtn.classList.add('active');
+                    textModeBtn.classList.remove('active');
+                } else {
+                    textModeBtn.classList.add('active');
+                    voiceModeBtn.classList.remove('active');
+                }
             });
+            
+            exportRecordBtn.addEventListener('click', exportMedicalRecord);
+            closePreviewBtn.addEventListener('click', function() {
+                exportPreview.style.display = 'none';
+            });
+            downloadPngBtn.addEventListener('click', downloadAsPNG);
         });
     </script>
 </body>

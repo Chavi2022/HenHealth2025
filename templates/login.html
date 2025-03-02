@@ -4,49 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Here Ye Health - Kingdom of Healing</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body class="medieval-theme">
-    <a href="{{ url_for('index') }}" class="back-button"><i class="fas fa-arrow-left"></i> Return to the Kingdom Gates</a>
+    <div class="medieval-background">
+        <div class="torch left"></div>
+        <div class="torch right"></div>
+    </div>
     
     <div class="login-container parchment">
         <div class="scroll-decoration top"></div>
         
-        <h1>Hen Health</h1>
+        <div class="seal-container">
+            <div class="royal-seal-large"></div>
+        </div>
+        
+        <h1>Here Ye Health</h1>
         <h2>Royal Physician Consultation</h2>
+        
+        <div class="medieval-quote">
+            <p>"The Royal Physician awaits to diagnose thy ailments and prescribe remedies for thy afflictions."</p>
+        </div>
         
         <div class="login-form">
             <form method="post" onsubmit="return showLoadingScreen()">
                 <div class="form-field">
-                    <label for="user_name">How may we address thee, good visitor?</label>
-                    <input type="text" id="user_name" name="user_name" required placeholder="Enter thy name">
+                    <label for="user_name">How shall we address thee, noble visitor?</label>
+                    <input type="text" id="user_name" name="user_name" required placeholder="Enter thy noble name">
                 </div>
                 
                 <div class="form-field">
-                    <label>Choose thy mother tongue:</label>
-                    <div class="language-selection">
-                        <button type="button" class="language-button" data-lang="en">English</button>
-                        <button type="button" class="language-button" data-lang="es">Español</button>
-                        <button type="button" class="language-button" data-lang="fr">Français</button>
-                        <button type="button" class="language-button" data-lang="de">Deutsch</button>
-                        <button type="button" class="language-button" data-lang="it">Italiano</button>
-                        <button type="button" class="language-button" data-lang="pt">Português</button>
-                    </div>
+                    <label for="user_ailment">What ailment brings thee to our halls of healing?</label>
+                    <textarea id="user_ailment" name="user_ailment" rows="3" placeholder="Describe thy troubles briefly..."></textarea>
                 </div>
                 
-                <div class="form-field">
-                    <button type="submit" class="btn-primary">Seek Consultation</button>
-                </div>
-                
-                <!-- Hidden input for language -->
+                <!-- Hidden input for default language -->
                 <input type="hidden" name="language" id="language-input" value="en">
+                
+                <div class="form-field">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-scroll"></i> Seek Audience with the Royal Physician
+                    </button>
+                </div>
             </form>
         </div>
         
         <div class="medieval-footer">
-            <p>By Royal Decree, healing for all subjects of the realm</p>
+            <p>By decree of His Majesty, healing shall be provided to all subjects of the realm</p>
+            <div class="footer-decoration"></div>
         </div>
         
         <div class="scroll-decoration bottom"></div>
@@ -55,45 +62,56 @@
     <!-- Loading Screen -->
     <div id="loading-screen" class="loading-screen medieval">
         <div class="spinner medieval-spinner"></div>
-        <p id="loading-text">The physician is being summoned...</p>
+        <p id="loading-text">The physician is being summoned from the royal chambers...</p>
     </div>
     
     <script>
-        // Select language and store in localStorage
         document.addEventListener('DOMContentLoaded', function() {
-            const languageButtons = document.querySelectorAll('.language-button');
-            const languageInput = document.getElementById('language-input');
+            // Simple animation for parchment appearance
+            const loginContainer = document.querySelector('.login-container');
+            loginContainer.style.opacity = '0';
             
-            // Set initial value from localStorage or default to English
-            const storedLang = localStorage.getItem('language') || 'en';
-            languageInput.value = storedLang;
+            setTimeout(() => {
+                loginContainer.style.transition = 'opacity 1s ease-in-out';
+                loginContainer.style.opacity = '1';
+            }, 200);
             
-            // Add active class to the stored language button
-            const activeButton = document.querySelector(`.language-button[data-lang="${storedLang}"]`);
-            if (activeButton) {
-                activeButton.classList.add('active');
-            }
-            
-            languageButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Remove active class from all buttons
-                    languageButtons.forEach(btn => {
-                        btn.classList.remove('active');
-                    });
+            // Torches flicker animation
+            const torches = document.querySelectorAll('.torch');
+            torches.forEach(torch => {
+                setInterval(() => {
+                    const flickerAmount = Math.random() * 0.4 + 0.8;
+                    torch.style.opacity = flickerAmount;
                     
-                    // Add active class to clicked button
-                    this.classList.add('active');
-                    
-                    // Store selected language
-                    const lang = this.getAttribute('data-lang');
-                    localStorage.setItem('language', lang);
-                    languageInput.value = lang;
-                });
+                    const shadowSize = Math.floor(Math.random() * 5) + 10;
+                    torch.style.boxShadow = `0 0 ${shadowSize}px 5px rgba(255, 165, 0, 0.7)`;
+                }, 100);
             });
         });
         
         function showLoadingScreen() {
             document.getElementById('loading-screen').style.display = 'flex';
+            
+            // Add some medieval-themed loading messages
+            const loadingTexts = [
+                "The physician is being summoned from the royal chambers...",
+                "Servants are preparing the healing scrolls...",
+                "The apothecary gathers remedies for thy consultation...",
+                "Royal scribes ready their quills to record thy ailments...",
+                "Court messengers hastily deliver thy summons..."
+            ];
+            
+            let textIndex = 0;
+            const loadingText = document.getElementById('loading-text');
+            
+            const textInterval = setInterval(() => {
+                textIndex = (textIndex + 1) % loadingTexts.length;
+                loadingText.textContent = loadingTexts[textIndex];
+            }, 2000);
+            
+            // Store the interval ID to clear it when page navigates
+            window.loadingTextInterval = textInterval;
+            
             return true;
         }
     </script>

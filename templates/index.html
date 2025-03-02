@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Here Ye Health - Kingdom of Healing</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
 </head>
 <body class="medieval-theme">
     <div class="login-container parchment">
         <picture class="logo-container">
-            <source srcset="images/henhealth.webp" type="image/webp">
-            <img src="images/henhealth.png" alt="Company Logo" class="logo">
+            <source srcset="{{ url_for('static', filename='images/henhealth.webp') }}" type="image/webp">
+            <img src="{{ url_for('static', filename='images/henhealth.png') }}" alt="Company Logo" class="logo">
         </picture>
 
         <div class="scroll-decoration top"></div>

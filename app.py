@@ -219,21 +219,32 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    language = session.get('language', 'en')
     if request.method == 'POST':
-        # Get name from form
+        # Get name and ailment from form
         user_name = request.form.get('user_name', 'Good Traveler')
-        language = request.form.get('language', 'en')
+        user_ailment = request.form.get('user_ailment', '')
+        
+        # Set default language to English
+        language = 'en'
         
         # Store in session
         session['user_name'] = user_name
+        session['user_ailment'] = user_ailment
         session['language'] = language
         
         # Generate a unique user ID 
         user_id = str(uuid.uuid4())
         session['user_id'] = user_id
         
-        return render_template('chat.html', user_name=user_name, user_id=user_id)
+        # Initialize medical record if not exists
+        if 'medical_entries' not in session:
+            session['medical_entries'] = []
+        
+        # Add initial ailment to medical record
+        if user_ailment:
+            session['initial_ailment'] = user_ailment
+        
+        return redirect(url_for('chat', user_name=user_name, user_id=user_id))
     
     return render_template('login.html')
 
@@ -271,28 +282,37 @@ def start_chat():
     # Get initial question with medieval flair
     root_question = decisionTree["root"]["question"]
     
-    # Add medieval flair to the question
-    prompt = f"""
-    Rephrase this medical question in a medieval court physician style, 
-    but maintain the medical meaning: "{root_question}"
-    Use thee, thou, and similar medieval English. Keep it concise.
-    """
+    # Add medieval flair to the question and include initial ailment if provided
+    initial_greeting = language_mappings[language]['welcome_back'].format(user_name)
     
-    medieval_question = generate_openai_response(prompt) or root_question
-    
-    # Personalize greeting based on user name
-    ai_message = language_mappings[language]['welcome_back'].format(user_name) + " " + medieval_question
+    if 'initial_ailment' in session and session['initial_ailment']:
+        prompt = f"""
+        A patient named {user_name} has described their ailment as: "{session['initial_ailment']}"
+        Based on this, create a personalized medieval court physician greeting that acknowledges 
+        their concern, then ask this medical question: "{root_question}"
+        Use thee, thou, and similar medieval English. Keep it somewhat concise.
+        """
+        medieval_question = generate_openai_response(prompt) or f"{initial_greeting} I understand thou art troubled by {session['initial_ailment']}. {root_question}"
+        # Clear the initial ailment after using it
+        session.pop('initial_ailment', None)
+    else:
+        prompt = f"""
+        Rephrase this medical question in a medieval court physician style, 
+        but maintain the medical meaning: "{root_question}"
+        Use thee, thou, and similar medieval English. Keep it concise.
+        """
+        medieval_question = generate_openai_response(prompt) or f"{initial_greeting} {root_question}"
     
     # Store in chat history
-    session['current_chat'].append(f"Physician: {ai_message}")
+    session['current_chat'].append(f"Physician: {medieval_question}")
     
     # Get audio if needed
     audio_base64 = None
     if data.get('audio_enabled', False):
-        audio_base64 = text_to_speech(ai_message, language)
+        audio_base64 = text_to_speech(medieval_question, language)
     
     return jsonify({
-        'message': ai_message,
+        'message': medieval_question,
         'audio': audio_base64
     })
 
