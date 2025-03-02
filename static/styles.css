@@ -90,7 +90,9 @@
     font-weight: 400;
     color: #8b5a2b;
 }
-
+.welcome-text p{
+    text-align: center;
+}
 /* Login Container Specific */
 .login-container {
     max-width: 600px;
@@ -480,6 +482,9 @@
 /* Additional Medieval theme CSS for new features */
 
 /* Consultation Mode Toggle */
+/* Additional Medieval theme CSS for new features */
+
+/* Consultation Mode Toggle */
 .consultation-mode {
     display: flex;
     align-items: center;
@@ -511,12 +516,49 @@
 }
 
 /* Readable Text Styles */
-.readable-sentence {
-    transition: color 0.3s;
+.sentence-container {
+    position: relative;
+    display: inline;
+    margin-right: 5px;
 }
 
-.readable-sentence:hover {
-    color: #8b5a2b;
+.readable-sentence {
+    display: inline;
+}
+
+.playback-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background-color: #4a7ab7;
+    color: white;
+    border-radius: 50%;
+    margin-left: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    vertical-align: middle;
+}
+
+.playback-button:hover {
+    background-color: #1E4878;
+    transform: scale(1.1);
+}
+
+.playback-button.playing {
+    background-color: #DAA520;
+    animation: pulse-gold 1s infinite alternate;
+}
+
+@keyframes pulse-gold {
+    0% {
+        box-shadow: 0 0 5px rgba(218, 165, 32, 0.7);
+    }
+    100% {
+        box-shadow: 0 0 12px rgba(218, 165, 32, 0.9);
+    }
 }
 
 /* Export Medical Record Button */
@@ -590,7 +632,7 @@
 }
 
 .royal-seal:before {
-    content: 'HYH';
+    content: 'HH';
     color: #f2e8c9;
     font-family: 'MedievalSharp', cursive;
     font-size: 24px;

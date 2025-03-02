@@ -3,11 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Here Ye Health - Royal Physician Consultation</title>
+    <title>Hen Health - Medical Consultation</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
+    <style>
+        /* Additional styles for the scrollable chat box */
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f3e3;
+            margin-bottom: 15px;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .message.ai {
+            justify-content: flex-start;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message-content {
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+        
+        .message.ai .message-content {
+            background-color: #e8e1c8;
+            margin-right: auto;
+        }
+        
+        .message.user .message-content {
+            background-color: #4a7ab7;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .message-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 8px;
+        }
+        
+        .chat-input {
+            display: flex;
+            margin-top: 10px;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        /* Playback button styles */
+        .sentence-container {
+            position: relative;
+            display: inline;
+            margin-right: 5px;
+        }
+        
+        .readable-sentence {
+            display: inline;
+        }
+        
+        .playback-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background-color: #4a7ab7;
+            color: white;
+            border-radius: 50%;
+            margin-left: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+        
+        .playback-button:hover {
+            background-color: #1E4878;
+            transform: scale(1.1);
+        }
+        
+        .playback-button.playing {
+            background-color: #DAA520;
+            animation: pulse-gold 1s infinite alternate;
+        }
+        
+        @keyframes pulse-gold {
+            0% {
+                box-shadow: 0 0 5px rgba(218, 165, 32, 0.7);
+            }
+            100% {
+                box-shadow: 0 0 12px rgba(218, 165, 32, 0.9);
+            }
+        }
+    </style>
 </head>
 <body class="medieval-theme">
     <div class="container chat-container parchment">
@@ -15,31 +125,12 @@
         <div class="scroll-decoration right"></div>
         
         <div class="chat-header">
-            <h2>Royal Physician Consultation</h2>
-            
-            <div class="language-selector">
-                <select id="language-select">
-                    <option value="en">English</option>
-                    <option value="es">Español (Spanish)</option>
-                    <option value="fr">Français (French)</option>
-                    <option value="de">Deutsch (German)</option>
-                    <option value="it">Italiano (Italian)</option>
-                    <option value="pt">Português (Portuguese)</option>
-                </select>
-            </div>
+            <h2>Medical Consultation</h2>
             
             <div class="consultation-mode">
                 <span>Consultation Mode:</span>
-                <button id="text-mode-btn" class="mode-btn active">Text Scroll</button>
-                <button id="voice-mode-btn" class="mode-btn">Voice of Physician</button>
-            </div>
-            
-            <div class="audio-toggle">
-                <label for="audio-toggle-switch">Voice of the Physician</label>
-                <label class="switch">
-                    <input type="checkbox" id="audio-toggle-switch" checked>
-                    <span class="slider round"></span>
-                </label>
+                <button id="text-mode-btn" class="mode-btn active">Text Mode</button>
+                <button id="voice-mode-btn" class="mode-btn">Voice Mode</button>
             </div>
         </div>
         
@@ -48,18 +139,18 @@
         </div>
         
         <div class="chat-input">
-            <input type="text" id="user-input" placeholder="Speak thy concerns...">
+            <input type="text" id="user-input" placeholder="Type your response...">
             <button id="mic-button" class="medieval-button mic-button">
                 <i class="fas fa-microphone"></i>
             </button>
             <button id="send-button" class="medieval-button">
-                <i class="fas fa-feather-alt"></i>
+                <i class="fas fa-paper-plane"></i>
             </button>
         </div>
         
         <div class="chat-actions">
             <button id="export-record-btn" class="medieval-button">
-                <i class="fas fa-scroll"></i> Export Medical Record
+                <i class="fas fa-file-medical"></i> Export Medical Record
             </button>
             <button id="end-chat-button" class="btn-danger">End Consultation</button>
         </div>
@@ -69,24 +160,7 @@
     
     <div id="loading-screen" class="loading-screen medieval">
         <div class="spinner medieval-spinner"></div>
-        <p id="loading-text">The physician is contemplating...</p>
-    </div>
-    
-    <!-- Medical Record Export Preview -->
-    <div id="export-preview" class="export-preview">
-        <div id="export-content" class="parchment">
-            <h2>Royal Medical Record</h2>
-            <div id="patient-info"></div>
-            <div id="record-content"></div>
-            <div class="medieval-footer">
-                <p>Sealed with the Royal Physician's Stamp</p>
-                <div class="royal-seal"></div>
-            </div>
-        </div>
-        <div class="export-actions">
-            <button id="download-png" class="medieval-button">Download as Scroll</button>
-            <button id="close-preview" class="btn-danger">Close</button>
-        </div>
+        <p id="loading-text">Processing...</p>
     </div>
     
     <script>
@@ -99,276 +173,38 @@
             const chatMessages = document.getElementById('chat-messages');
             const userInput = document.getElementById('user-input');
             const sendButton = document.getElementById('send-button');
+            const micButton = document.getElementById('mic-button');
             const endChatButton = document.getElementById('end-chat-button');
-            const languageSelect = document.getElementById('language-select');
-            const audioToggleSwitch = document.getElementById('audio-toggle-switch');
-            const audioPlayer = document.getElementById('audio-player');
-            const loadingScreen = document.getElementById('loading-screen');
+            const exportRecordBtn = document.getElementById('export-record-btn');
             const textModeBtn = document.getElementById('text-mode-btn');
             const voiceModeBtn = document.getElementById('voice-mode-btn');
-            const exportRecordBtn = document.getElementById('export-record-btn');
-            const exportPreview = document.getElementById('export-preview');
-            const closePreviewBtn = document.getElementById('close-preview');
-            const downloadPngBtn = document.getElementById('download-png');
-            const micButton = document.getElementById('mic-button');
-            
-            // Set initial language from localStorage
-            let currentLanguage = localStorage.getItem('language') || 'en';
-            languageSelect.value = currentLanguage;
-            
-            let audioEnabled = true;
+            const audioPlayer = document.getElementById('audio-player');
+            const loadingScreen = document.getElementById('loading-screen');
+            document.getElementById('export-record-btn').addEventListener('click', function() {
+    fetch('/api/export_record')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to export record');
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'medical_record.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    })
+    .catch(error => {
+        alert('Error exporting medical record.');
+        console.error(error);
+    });
+});
+
+            let audioEnabled = false;
             let consultationHistory = [];
-            
-            // Initialize the chat
-            startChat();
-            
-            // Consultation mode toggle
-            textModeBtn.addEventListener('click', function() {
-                textModeBtn.classList.add('active');
-                voiceModeBtn.classList.remove('active');
-                audioEnabled = false;
-                audioToggleSwitch.checked = false;
-            });
-            
-            voiceModeBtn.addEventListener('click', function() {
-                voiceModeBtn.classList.add('active');
-                textModeBtn.classList.remove('active');
-                audioEnabled = true;
-                audioToggleSwitch.checked = true;
-            });
-            
-            // Function to start chat session
-            function startChat() {
-                showLoading();
-                
-                fetch('/api/start_chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        user_name: userName,
-                        language: currentLanguage,
-                        audio_enabled: audioEnabled
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    addMessage('ai', data.message);
-                    consultationHistory.push({role: 'physician', text: data.message});
-                    
-                    // Play audio if available
-                    if (data.audio && audioEnabled) {
-                        playAudio(data.audio);
-                    }
-                    
-                    hideLoading();
-                })
-                .catch(error => {
-                    console.error('Error starting chat:', error);
-                    hideLoading();
-                });
-            }
-            
-            // Function to send user message
-            function sendMessage() {
-                const message = userInput.value.trim();
-                
-                if (message) {
-                    addMessage('user', message);
-                    consultationHistory.push({role: 'patient', text: message});
-                    userInput.value = '';
-                    
-                    showLoading();
-                    
-                    fetch('/api/chat', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            message: message,
-                            user_id: userId,
-                            user_name: userName,
-                            language: currentLanguage,
-                            audio_enabled: audioEnabled
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        addMessage('ai', data.message);
-                        consultationHistory.push({role: 'physician', text: data.message});
-                        
-                        // Play audio if available
-                        if (data.audio && audioEnabled) {
-                            playAudio(data.audio);
-                        }
-                        
-                        // Check if this is a diagnosis (end of decision tree)
-                        if (data.is_diagnosis) {
-                            endChatButton.classList.add('highlight');
-                        }
-                        
-                        hideLoading();
-                    })
-                    .catch(error => {
-                        console.error('Error sending message:', error);
-                        addMessage('error', 'A grave misfortune has occurred. The physician\'s words were lost to the winds.');
-                        hideLoading();
-                    });
-                }
-            }
-            
-            // Function to play audio from base64
-            function playAudio(audioBase64) {
-                const audioSrc = 'data:audio/mp3;base64,' + audioBase64;
-                audioPlayer.src = audioSrc;
-                audioPlayer.play();
-            }
-            
-            // Function to make text readable with hover and click
-            function makeTextReadable(element) {
-                const text = element.textContent;
-                const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-                
-                element.innerHTML = '';
-                sentences.forEach(sentence => {
-                    const sentenceSpan = document.createElement('span');
-                    sentenceSpan.className = 'readable-sentence';
-                    sentenceSpan.textContent = sentence;
-                    sentenceSpan.style.textDecoration = 'underline';
-                    sentenceSpan.style.cursor = 'pointer';
-                    
-                    sentenceSpan.addEventListener('click', function() {
-                        if (!this.dataset.reading) {
-                            this.dataset.reading = 'true';
-                            this.style.color = '#8b5a2b';
-                            
-                            if (audioEnabled) {
-                                // Here we would normally call text-to-speech API
-                                // For demo, we'll just simulate with a timeout
-                                setTimeout(() => {
-                                    delete this.dataset.reading;
-                                    this.style.color = '';
-                                }, 2000);
-                            }
-                        }
-                    });
-                    
-                    element.appendChild(sentenceSpan);
-                });
-            }
-            
-            // Function to add a message to the chat
-            function addMessage(sender, message) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${sender}`;
-                
-                if (sender === 'ai') {
-                    messageDiv.innerHTML = `
-                        <div class="message-avatar">
-                            <i class="fas fa-user-md"></i> <!-- Medieval physician icon -->
-                        </div>
-                        <div class="message-content">${message}</div>
-                    `;
-                    
-                    // Make physician's text readable after it's added
-                    const contentDiv = messageDiv.querySelector('.message-content');
-                    makeTextReadable(contentDiv);
-                } else if (sender === 'user') {
-                    messageDiv.innerHTML = `
-                        <div class="message-content">${message}</div>
-                        <div class="message-avatar">
-                            <i class="fas fa-user"></i>
-                        </div>
-                    `;
-                } else {
-                    // Error message
-                    messageDiv.innerHTML = `
-                        <div class="message-content error">${message}</div>
-                    `;
-                }
-                
-                chatMessages.appendChild(messageDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-            
-            // Function to handle ending the chat
-            function endChat() {
-                showLoading();
-                
-                fetch('/api/end_chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        user_id: userId
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        window.location.href = data.redirect;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error ending chat:', error);
-                    hideLoading();
-                    alert('There was an error ending the consultation. Please try again.');
-                });
-            }
-            
-            // Function to export medical record
-            function exportMedicalRecord() {
-                // Populate the export preview
-                const patientInfo = document.getElementById('patient-info');
-                const recordContent = document.getElementById('record-content');
-                
-                patientInfo.innerHTML = `
-                    <h3>Patient: ${userName}</h3>
-                    <p>Date: ${new Date().toLocaleDateString('en-US', { 
-                        day: 'numeric', 
-                        month: 'long', 
-                        year: 'numeric' 
-                    })}</p>
-                `;
-                
-                recordContent.innerHTML = '';
-                consultationHistory.forEach(entry => {
-                    const entryDiv = document.createElement('div');
-                    entryDiv.className = `record-entry ${entry.role}`;
-                    entryDiv.innerHTML = `
-                        <strong>${entry.role === 'physician' ? 'Physician' : 'Patient'}:</strong>
-                        <span>${entry.text}</span>
-                    `;
-                    recordContent.appendChild(entryDiv);
-                });
-                
-                // Show the export preview
-                exportPreview.style.display = 'flex';
-            }
-            
-            // Function to download as PNG
-            function downloadAsPNG() {
-                html2canvas(document.getElementById('export-content')).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = `medical-record-${userName}-${new Date().toISOString().slice(0,10)}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                });
-            }
-            
-            // Function to show loading screen
-            function showLoading() {
-                loadingScreen.style.display = 'flex';
-            }
-            
-            // Function to hide loading screen
-            function hideLoading() {
-                loadingScreen.style.display = 'none';
-            }
             
             // Speech Recognition Setup
             let recognition = null;
@@ -381,7 +217,7 @@
                     recognition = new SpeechRecognition();
                     recognition.continuous = false;
                     recognition.interimResults = true;
-                    recognition.lang = languageSelect.value; // Set the language
+                    recognition.lang = 'en-US';
                     
                     recognition.onstart = function() {
                         isListening = true;
@@ -437,7 +273,120 @@
             // Initialize speech recognition
             const speechRecognitionSupported = initSpeechRecognition();
             
-            // Toggle speech recognition
+            // Consultation mode toggle
+            textModeBtn.addEventListener('click', function() {
+                textModeBtn.classList.add('active');
+                voiceModeBtn.classList.remove('active');
+                audioEnabled = false;
+            });
+            
+            voiceModeBtn.addEventListener('click', function() {
+                voiceModeBtn.classList.add('active');
+                textModeBtn.classList.remove('active');
+                audioEnabled = true;
+            });
+            
+            // Initialize the chat
+            startChat();
+            
+            // Function to start chat session
+            function startChat() {
+                showLoading();
+                
+                fetch('/api/start_chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        user_name: userName,
+                        audio_enabled: audioEnabled
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    addMessage('ai', data.message);
+                    consultationHistory.push({role: 'physician', text: data.message});
+                    
+                    // Play audio if available
+                    if (data.audio && audioEnabled) {
+                        playAudio(data.audio);
+                    }
+                    
+                    hideLoading();
+                })
+                .catch(error => {
+                    console.error('Error starting chat:', error);
+                    hideLoading();
+                });
+            }
+            fetch('/api/chat', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        message: userInput.value.trim(),
+        user_id: userId,
+        user_name: userName,
+        audio_enabled: audioEnabled
+    })
+})
+
+            
+            // Function to send user message
+            function sendMessage() {
+                const message = userInput.value.trim();
+                
+                if (message) {
+                    addMessage('user', message);
+                    consultationHistory.push({role: 'patient', text: message});
+                    userInput.value = '';
+                    
+                    showLoading();
+                    
+                    fetch('/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: message,
+                            user_id: userId,
+                            user_name: userName,
+                            audio_enabled: audioEnabled
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        addMessage('ai', data.message);
+                        consultationHistory.push({role: 'physician', text: data.message});
+                        
+                        // Play audio if available
+                        if (data.audio && audioEnabled) {
+                            playAudio(data.audio);
+                        }
+                        
+                        // Check if this is a diagnosis (end of decision tree)
+                        if (data.is_diagnosis) {
+                            endChatButton.classList.add('highlight');
+                        }
+                        
+                        hideLoading();
+                        
+                        // Auto-scroll to the bottom of the chat
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    })
+                    .catch(error => {
+                        console.error('Error sending message:', error);
+                        addMessage('error', 'An error occurred. Please try again.');
+                        hideLoading();
+                    });
+                }
+            }
+            
+            // Function to toggle speech recognition
             function toggleSpeechRecognition() {
                 if (!speechRecognitionSupported) {
                     alert('Speech recognition is not supported in your browser.');
@@ -448,9 +397,201 @@
                     recognition.stop();
                 } else {
                     userInput.value = '';
-                    recognition.lang = languageSelect.value; // Update language before starting
                     recognition.start();
                 }
+            }
+            
+            // Function to play audio from base64
+            function playAudio(audioBase64) {
+                const audioSrc = 'data:audio/mp3;base64,' + audioBase64;
+                audioPlayer.src = audioSrc;
+                audioPlayer.play();
+            }
+            
+            // Function to make text readable with hover and click
+            function makeTextReadable(element, message) {
+                const text = element.textContent;
+                const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+                
+                element.innerHTML = '';
+                sentences.forEach(sentence => {
+                    const sentenceSpan = document.createElement('span');
+                    sentenceSpan.className = 'readable-sentence';
+                    sentenceSpan.textContent = sentence;
+                    
+                    // Add a play button after each sentence
+                    const playButtonSpan = document.createElement('span');
+                    playButtonSpan.className = 'playback-button';
+                    playButtonSpan.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    
+                    // Wrap the sentence and play button together
+                    const sentenceContainer = document.createElement('span');
+                    sentenceContainer.className = 'sentence-container';
+                    sentenceContainer.appendChild(sentenceSpan);
+                    sentenceContainer.appendChild(playButtonSpan);
+                    
+                    // Add click event to the play button
+                    playButtonSpan.addEventListener('click', function() {
+                        if (!this.dataset.reading) {
+                            // Mark all other buttons as not reading
+                            document.querySelectorAll('.playback-button').forEach(btn => {
+                                delete btn.dataset.reading;
+                                btn.classList.remove('playing');
+                            });
+                            
+                            // Mark this button as reading
+                            this.dataset.reading = 'true';
+                            this.classList.add('playing');
+                            
+                            // Text to speech for this sentence
+                            fetch('/api/text_to_speech', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    text: sentence,
+                                    language: 'en'
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.audio) {
+                                    const audioPlayer = document.getElementById('audio-player');
+                                    audioPlayer.src = 'data:audio/mp3;base64,' + data.audio;
+                                    
+                                    // When audio ends, reset the button
+                                    audioPlayer.onended = () => {
+                                        delete this.dataset.reading;
+                                        this.classList.remove('playing');
+                                    };
+                                    
+                                    audioPlayer.play();
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error playing text:', error);
+                                delete this.dataset.reading;
+                                this.classList.remove('playing');
+                            });
+                        } else {
+                            // If already playing, stop it
+                            const audioPlayer = document.getElementById('audio-player');
+                            audioPlayer.pause();
+                            delete this.dataset.reading;
+                            this.classList.remove('playing');
+                        }
+                    });
+                    
+                    element.appendChild(sentenceContainer);
+                });
+            }
+            
+            // Function to add a message to the chat
+            function addMessage(sender, message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+                
+                if (sender === 'ai') {
+                    messageDiv.innerHTML = `
+                        <div class="message-avatar">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="message-content">${message}</div>
+                    `;
+                    
+                    // Make physician's text readable after it's added
+                    const contentDiv = messageDiv.querySelector('.message-content');
+                    makeTextReadable(contentDiv);
+                } else if (sender === 'user') {
+                    messageDiv.innerHTML = `
+                        <div class="message-content">${message}</div>
+                        <div class="message-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    `;
+                } else {
+                    // Error message
+                    messageDiv.innerHTML = `
+                        <div class="message-content error">${message}</div>
+                    `;
+                }
+                
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Function to handle ending the chat
+            function endChat() {
+                showLoading();
+                
+                fetch('/api/end_chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        window.location.href = data.redirect;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error ending chat:', error);
+                    hideLoading();
+                    alert('There was an error ending the consultation. Please try again.');
+                });
+            }
+            
+            // Function to export medical record
+            function exportMedicalRecord() {
+                showLoading();
+                
+                // Create a form to submit for direct PDF download
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/api/export_record`;
+                form.target = '_blank'; // Open in new tab
+                
+                // Add user_id as hidden input
+                const userIdInput = document.createElement('input');
+                userIdInput.type = 'hidden';
+                userIdInput.name = 'user_id';
+                userIdInput.value = userId;
+                form.appendChild(userIdInput);
+                
+                // Add format as hidden input
+                const formatInput = document.createElement('input');
+                formatInput.type = 'hidden';
+                formatInput.name = 'format';
+                formatInput.value = 'pdf';
+                form.appendChild(formatInput);
+                
+                // Append form to body
+                document.body.appendChild(form);
+                
+                // Submit form and remove it
+                form.submit();
+                document.body.removeChild(form);
+                
+                hideLoading();
+            }
+            
+            // Update the exportRecordBtn event listener to call this function
+            exportRecordBtn.addEventListener('click', exportMedicalRecord);
+            
+            // Function to show loading screen
+            function showLoading() {
+                loadingScreen.style.display = 'flex';
+            }
+            
+            // Function to hide loading screen
+            function hideLoading() {
+                loadingScreen.style.display = 'none';
             }
             
             // Event Listeners
@@ -465,35 +606,6 @@
             micButton.addEventListener('click', toggleSpeechRecognition);
             
             endChatButton.addEventListener('click', endChat);
-            
-            languageSelect.addEventListener('change', function() {
-                currentLanguage = this.value;
-                localStorage.setItem('language', currentLanguage);
-                
-                // Update speech recognition language if initialized
-                if (recognition) {
-                    recognition.lang = currentLanguage;
-                }
-                
-                // You could restart the chat here or just change the language for upcoming messages
-            });
-            
-            audioToggleSwitch.addEventListener('change', function() {
-                audioEnabled = this.checked;
-                if (audioEnabled) {
-                    voiceModeBtn.classList.add('active');
-                    textModeBtn.classList.remove('active');
-                } else {
-                    textModeBtn.classList.add('active');
-                    voiceModeBtn.classList.remove('active');
-                }
-            });
-            
-            exportRecordBtn.addEventListener('click', exportMedicalRecord);
-            closePreviewBtn.addEventListener('click', function() {
-                exportPreview.style.display = 'none';
-            });
-            downloadPngBtn.addEventListener('click', downloadAsPNG);
         });
     </script>
 </body>
