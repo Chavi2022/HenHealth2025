@@ -1,5 +1,3 @@
-# tree.py - Expanded decision tree structure for medical diagnosis with modern language
-
 decisionTree = {
     "root": {
         "question": "Good day! What's your primary symptom today?",

@@ -114,9 +114,14 @@ demographic_questions = [
 ]
 
 # OpenAI API functions
-def generate_openai_response(prompt):
-    """Generate a response using OpenAI's API"""
+def generate_openai_response(prompt, default_response=None):
+    """Generate a response using OpenAI's API with improved error handling"""
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    
+    # Validate inputs
+    if not prompt or not OPENAI_API_KEY:
+        logger.warning("Missing prompt or API key")
+        return default_response
     
     headers = {
         "Authorization": f"Bearer {OPENAI_API_KEY}",
@@ -124,144 +129,86 @@ def generate_openai_response(prompt):
     }
     
     data = {
-        "model": "gpt-4-turbo",
+        "model": "gpt-3.5-turbo",
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.7
+        "temperature": 0.7,
+        "max_tokens": 150  # Limit response length
     }
     
     try:
         response = requests.post(
             "https://api.openai.com/v1/chat/completions",
             headers=headers,
-            json=data
+            json=data,
+            timeout=10  # Add timeout to prevent hanging
         )
         
+        # Log full response for debugging
+        logger.info(f"OpenAI API Response Status: {response.status_code}")
+        logger.info(f"OpenAI API Response: {response.text}")
+        
         if response.status_code == 200:
-            return response.json()["choices"][0]["message"]["content"]
+            response_json = response.json()
+            
+            # Additional checks for response structure
+            if "choices" in response_json and response_json["choices"]:
+                content = response_json["choices"][0].get("message", {}).get("content")
+                if content:
+                    return content.strip()
+            
+            logger.error("Unexpected OpenAI API response structure")
+            return default_response
         else:
             logger.error(f"OpenAI API Error: {response.status_code} - {response.text}")
-            return None
+            return default_response
+    
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Network error calling OpenAI API: {str(e)}")
+        return default_response
     except Exception as e:
-        logger.error(f"Error calling OpenAI API: {str(e)}")
-        return None
+        logger.error(f"Unexpected error calling OpenAI API: {str(e)}")
+        return default_response
+
+def translate_text(text, target_language):
+    """Translate text to the target language using OpenAI API"""
+    if target_language == "en":
+        return text
+    prompt = f"Translate the following text to {target_language}: \"{text}\""
+    translated_text = generate_openai_response(prompt, default_response=text)
+    return translated_text.strip() if translated_text else text
+
+# Demographic response interpretation (detailed version)
+def interpret_demographic_response(user_input, question):
+    if "options" in question:
+        valid_options = [option.lower() for option in question["options"]]
+        response = user_input.strip().lower()
+        if response in valid_options:
+            return response
+        else:
+            prompt = (
+                f"Interpret the following demographic response: '{user_input}'. "
+                f"Return one of the following options: {', '.join(valid_options)}."
+            )
+            result = generate_openai_response(prompt)
+            if result:
+                return result.strip().lower()
+            else:
+                # Fallback if API call fails
+                return "invalid"
+    else:
+        return user_input.strip()
 
 def interpret_response(user_response, question_node):
-    """Interpret user's response and categorize it into one of the options or handle invalid responses"""
+    """Interpret user's response and categorize it into one of the options."""
     options = list(question_node.keys())
     options.remove("question")
-    
     prompt = f"""
     Given the user response: "{user_response}"
     And the question: "{question_node['question']}"
-    Interpret the response and categorize it into one of the following options: {', '.join(options)}
-    If the response doesn't properly address the question, analyze what the user might be trying to say 
-    and make your best guess at which option matches their intent. Only return "invalid" if you 
-    absolutely cannot determine their intent.
-    
-    Please return only one option from the list above.
+    Determine which option best fits the response: {', '.join(options)}
+    If no suitable option exists, return "invalid".
     """
-    
-    interpreted_response = generate_openai_response(prompt).strip().lower()
-    
-    # Post-processing to ensure only one option is returned
-    if interpreted_response in options:
-        return interpreted_response
-    elif ',' in interpreted_response:
-        # If multiple options are returned, take the first one
-        first_option = interpreted_response.split(',')[0].strip()
-        return first_option if first_option in options else options[0]  # Default to first option instead of "invalid"
-    elif interpreted_response == "invalid":
-        # For invalid responses, use OpenAI to determine most likely intent
-        followup_prompt = f"""
-        The user's response: "{user_response}" to the question: "{question_node['question']}"
-        was difficult to classify. Please analyze their message and determine which of these options 
-        is most likely what they meant: {', '.join(options)}
-        Just return the single most likely option.
-        """
-        
-        fallback_response = generate_openai_response(followup_prompt).strip().lower()
-        
-        if fallback_response in options:
-            return fallback_response
-        else:
-            # As a last resort, return the first option to keep the conversation flowing
-            return options[0]
-    
-    # If we can't determine the response but it's not "invalid", try to match to an option
-    for option in options:
-        if option in interpreted_response:
-            return option
-    
-    # If all else fails, return the first option to keep the conversation flowing
-    return options[0]
-
-def interpret_demographic_response(user_response, question):
-    """Extract demographic information from user response"""
-    if "sex" in question["id"]:
-        prompt = f"""
-        Given the user response: "{user_response}"
-        Determine the user's biological sex. Return only one of: male, female, other, or unknown.
-        If the response is unclear, return the most likely option.
-        """
-        
-        sex = generate_openai_response(prompt).strip().lower()
-        if sex in ["male", "female", "other"]:
-            return sex
-        return "unknown"
-    
-    elif "age" in question["id"]:
-        prompt = f"""
-        Given the user response: "{user_response}"
-        Determine the user's age category or exact age.
-        If a specific age is given, return that number.
-        If a range or category is given, determine if they are: child (0-12), teen (13-19), adult (20-64), or senior (65+).
-        Return only the age number or category word.
-        """
-        
-        age = generate_openai_response(prompt).strip().lower()
-        
-        # Check if the response is a number (specific age)
-        if age.isdigit():
-            return age
-        
-        # Otherwise, categorize
-        if age in ["child", "teen", "adult", "senior"]:
-            return age
-        return "adult"  # Default to adult if unclear
-    
-    elif "height" in question["id"]:
-        prompt = f"""
-        Given the user response about their height: "{user_response}"
-        Extract the height value and unit (inches, centimeters, feet).
-        If in feet and inches, convert to inches.
-        Return the result as a number followed by unit, e.g., "70 inches" or "175 cm".
-        If unclear, make your best estimate.
-        """
-        
-        return generate_openai_response(prompt).strip().lower()
-    
-    elif "weight" in question["id"]:
-        prompt = f"""
-        Given the user response about their weight: "{user_response}"
-        Extract the weight value and unit (pounds, kilograms).
-        Return the result as a number followed by unit, e.g., "160 lbs" or "72 kg".
-        If unclear, make your best estimate.
-        """
-        
-        return generate_openai_response(prompt).strip().lower()
-    
-    elif "medical_history" in question["id"]:
-        prompt = f"""
-        Given the user response about their medical history: "{user_response}"
-        Summarize their medical history concisely.
-        If they mention specific conditions, include those.
-        If they have no significant medical history, indicate that.
-        Keep it brief but informative.
-        """
-        
-        return generate_openai_response(prompt).strip()
-    
-    return user_response  # Default fallback
+    return generate_openai_response(prompt).strip().lower() or "invalid"
 
 def modernize_medical_text(medieval_text):
     """Convert medieval-style medical text to modern English while keeping a slight medieval flavor"""
@@ -308,72 +255,45 @@ def generate_medical_record_pdf(record):
     styles = getSampleStyleSheet()
     
     # Create custom styles
-    styles.add(ParagraphStyle(name='Title', 
+    custom_title_style = ParagraphStyle(name='HenHealthTitle', 
                              parent=styles['Heading1'], 
                              fontSize=16, 
-                             spaceAfter=12))
+                             spaceAfter=12)
     
-    styles.add(ParagraphStyle(name='Subtitle', 
+    custom_subtitle_style = ParagraphStyle(name='HenHealthSubtitle', 
                              parent=styles['Heading2'], 
                              fontSize=14, 
-                             spaceAfter=10))
+                             spaceAfter=10)
     
-    styles.add(ParagraphStyle(name='Section', 
+    custom_section_style = ParagraphStyle(name='HenHealthSection', 
                              parent=styles['Heading3'], 
                              fontSize=12, 
-                             spaceAfter=8))
+                             spaceAfter=8)
     
     # Build the PDF content
     elements = []
     
     # Title
-    elements.append(Paragraph("Hen Health Medical Record", styles['Title']))
-    elements.append(Spacer(1, 0.25*inch))
-    
-    # Patient information
-    elements.append(Paragraph("Patient Information", styles['Subtitle']))
-    
-    # Create patient info table
-    patient_data = [
-        ["Name:", record.get('name', 'Unknown Patient')],
-        ["Date of Birth:", record.get('demographics', {}).get('dob', 'Not provided')],
-        ["Sex:", record.get('demographics', {}).get('sex', 'Not provided')],
-        ["Height:", record.get('demographics', {}).get('height', 'Not provided')],
-        ["Weight:", record.get('demographics', {}).get('weight', 'Not provided')],
-        ["Medical History:", record.get('demographics', {}).get('medical_history', 'None reported')],
-    ]
-    
-    patient_table = Table(patient_data, colWidths=[1.5*inch, 4*inch])
-    patient_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('PADDINGTOP', (0, 0), (-1, -1), 4),
-        ('PADDINGBOTTOM', (0, 0), (-1, -1), 4),
-        ('PADDINGLEFT', (0, 0), (-1, -1), 4),
-        ('PADDINGRIGHT', (0, 0), (-1, -1), 4),
-    ]))
-    
-    elements.append(patient_table)
+    elements.append(Paragraph("Hen Health Medical Record", custom_title_style))
     elements.append(Spacer(1, 0.25*inch))
     
     # Consultations
     if record.get('entries') and len(record['entries']) > 0:
         for i, entry in enumerate(record['entries']):
-            elements.append(Paragraph(f"Consultation {i+1} ({entry.get('time', 'Unknown date')})", styles['Subtitle']))
+            elements.append(Paragraph(f"Consultation {i+1} ({entry.get('time', 'Unknown date')})", custom_subtitle_style))
             
             # Diagnosis
-            elements.append(Paragraph("Assessed Condition:", styles['Section']))
+            elements.append(Paragraph("Assessed Condition:", custom_section_style))
             elements.append(Paragraph(entry.get('diagnosis', 'No diagnosis provided'), styles['Normal']))
             elements.append(Spacer(1, 0.1*inch))
             
             # Recommendations
-            elements.append(Paragraph("Recommendations for Healthcare Provider:", styles['Section']))
+            elements.append(Paragraph("Recommendations for Healthcare Provider:", custom_section_style))
             elements.append(Paragraph(entry.get('recommendations', 'No recommendations provided'), styles['Normal']))
             elements.append(Spacer(1, 0.1*inch))
             
             # Conversation
-            elements.append(Paragraph("Consultation Transcript:", styles['Section']))
+            elements.append(Paragraph("Consultation Transcript:", custom_section_style))
             
             conversation_data = []
             for line in entry.get('conversation', []):
@@ -398,7 +318,7 @@ def generate_medical_record_pdf(record):
             
             elements.append(Spacer(1, 0.25*inch))
     else:
-        elements.append(Paragraph("No Consultations Found", styles['Subtitle']))
+        elements.append(Paragraph("No Consultations Found", custom_subtitle_style))
         elements.append(Paragraph("This patient has not completed any consultations yet.", styles['Normal']))
     
     # Disclaimer
@@ -605,11 +525,8 @@ def start_chat():
 @app.route('/api/chat', methods=['POST'])
 def process_chat():
     global predictionState
-    
     data = request.get_json()
     user_input = data.get('message')
-    user_id = data.get('user_id')
-    user_name = data.get('user_name', 'Good Traveler')
     language = data.get('language', 'en')
     
     # Initialize chat history if not already
@@ -622,64 +539,41 @@ def process_chat():
     # Check if we're still collecting demographics
     if not session.get('demographics_collected', False):
         current_question_index = session.get('current_demographic_question', 0)
-        
         if current_question_index < len(demographic_questions):
-            # Process this demographic answer
             current_question = demographic_questions[current_question_index]
             answer = interpret_demographic_response(user_input, current_question)
-            
-            # Store the demographic information
-            if 'demographics' not in session:
-                session['demographics'] = {}
-            
+            # Store the demographic answer...
             session['demographics'][current_question["id"]] = answer
             
             # Move to the next question
             next_question_index = current_question_index + 1
             session['current_demographic_question'] = next_question_index
             
-            # Check if we have more demographic questions
             if next_question_index < len(demographic_questions):
-                # Get the next demographic question
                 next_question = demographic_questions[next_question_index]
-                
                 if "options" in next_question:
                     options_text = ", ".join(next_question["options"])
                     question_text = f"{next_question['question']} ({options_text})"
                 else:
                     question_text = next_question['question']
                 
-                # Get audio if needed
-                audio_base64 = None
-                if data.get('audio_enabled', False):
-                    audio_base64 = text_to_speech(question_text, language)
+                # Translate the question text
+                question_text = translate_text(question_text, language)
                 
-                # Add to chat history
+                audio_base64 = text_to_speech(question_text, language) if data.get('audio_enabled', False) else None
                 session['current_chat'].append(f"Physician: {question_text}")
-                
                 return jsonify({
                     'message': question_text,
                     'audio': audio_base64,
                     'is_demographic': True
                 })
             else:
-                # All demographics collected, start the actual consultation
                 session['demographics_collected'] = True
-                
-                # Get the initial question from the decision tree
                 root_question = decisionTree["root"]["question"]
-                
-                # Create a transition message
-                transition = f"Thank you for providing that information. Now, let's discuss your health concerns. {root_question}"
-                
-                # Add to chat history
+                translated_root_question = translate_text(root_question, language)
+                transition = f"Thank you for providing that information. Now, let's discuss your health concerns. {translated_root_question}"
                 session['current_chat'].append(f"Physician: {transition}")
-                
-                # Get audio if needed
-                audio_base64 = None
-                if data.get('audio_enabled', False):
-                    audio_base64 = text_to_speech(transition, language)
-                
+                audio_base64 = text_to_speech(transition, language) if data.get('audio_enabled', False) else None
                 return jsonify({
                     'message': transition,
                     'audio': audio_base64,
@@ -763,6 +657,8 @@ def process_chat():
             # Couldn't understand but we have a valid response
             ai_response = f"{language_mappings[language]['couldnt_understand']} {current_question}"
             is_diagnosis = False
+            if language != "en":
+                ai_response = translate_text(ai_response, language)
         
         # Add AI response to chat history
         session['current_chat'].append(f"Physician: {ai_response}")
