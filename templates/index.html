@@ -6,52 +6,271 @@
     <title>Hen Health - Kingdom of Healing</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .login-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            max-width: 200px;
+            height: auto;
+        }
+        
+        .welcome-text {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .language-selection {
+            margin: 30px 0;
+        }
+        
+        .language-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .language-button {
+            padding: 10px 20px;
+            background-color: #d9cba8;
+            border: 2px solid #8b7355;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'MedievalSharp', cursive;
+        }
+        
+        .language-button.active {
+            background-color: #8b5a2b;
+            color: #f2e8c9;
+        }
+        
+        .option-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .option-button {
+            padding: 15px 25px;
+            background-color: #4a7ab7;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .option-button:hover {
+            background-color: #1E4878;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .option-button i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .medieval-footer {
+            text-align: center;
+            margin-top: 30px;
+            font-style: italic;
+        }
+        
+        @media (max-width: 768px) {
+            .language-buttons,
+            .option-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .option-button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body class="medieval-theme">
     <div class="login-container parchment">
-        <picture class="logo-container">
-            <source srcset="{{ url_for('static', filename='images/henhealth.webp') }}" type="image/webp">
-            <img src="{{ url_for('static', filename='images/henhealth.png') }}" alt="Company Logo" class="logo">
-        </picture>
-
-        <div class="scroll-decoration top"></div>
+        <div class="scroll-decoration left"></div>
+        <div class="scroll-decoration right"></div>
+        
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='images/henhealth.png') }}" alt="Hen Health Logo" class="logo">
+        </div>
 
         <h1>Hen Health</h1>
-        <h2>Kingdom of Healing</h2>
+        <h2 id="subtitle">Kingdom of Healing</h2>
         
         <div class="welcome-text">
-            <p>Oyez, Oyez! By royal decree, His Majesty's court physicians are now available for consultation.</p>
-            <p>Step forth and select thy language to commence thy journey to wellness.</p>
+            <p id="welcomeText1">Oyez, Oyez! By royal decree, His Majesty's court physicians are now available for consultation.</p>
+            <p id="welcomeText2">Step forth and select thy language to commence thy journey to wellness.</p>
         </div>
         
         <div class="language-selection">
-            <a href="{{ url_for('login') }}" class="language-button" data-lang="en">English</a>
-            <a href="{{ url_for('login') }}" class="language-button" data-lang="es">Español</a>
-            <a href="{{ url_for('login') }}" class="language-button" data-lang="fr">Français</a>
-            <a href="{{ url_for('login') }}" class="language-button" data-lang="de">Deutsch</a>
-            <a href="{{ url_for('login') }}" class="language-button" data-lang="it">Italiano</a>
-            <a href="{{ url_for('login') }}" class="language-button" data-lang="pt">Português</a>
+            <h3 id="languageTitle">Select Your Language</h3>
+            <div class="language-buttons">
+                <button class="language-button active" data-lang="en">English</button>
+                <button class="language-button" data-lang="es">Español</button>
+                <button class="language-button" data-lang="fr">Français</button>
+                <button class="language-button" data-lang="de">Deutsch</button>
+                <button class="language-button" data-lang="it">Italiano</button>
+                <button class="language-button" data-lang="pt">Português</button>
+            </div>
         </div>
         
+        <div class="option-buttons">
+            <a href="{{ url_for('webform') }}" class="option-button" id="webform-link">
+                <i class="fas fa-clipboard-list"></i> <span id="webformText">Fill Medical Form</span>
+            </a>
+            <a href="{{ url_for('login') }}" class="option-button" id="chat-link">
+                <i class="fas fa-comments"></i> <span id="chatText">Chat with Physician</span>
+            </a>
+        </div>
+        
+        <div class="medieval-footer">
+            <p id="footerText">By Royal Decree, healing for all subjects of the realm</p>
+        </div>
         
         <div class="scroll-decoration bottom"></div>
     </div>
     
     <script>
-        // Store language selection in localStorage and redirect
+        // Language translations
+        const translations = {
+            en: {
+                subtitle: "Kingdom of Healing",
+                welcomeText1: "Oyez, Oyez! By royal decree, His Majesty's court physicians are now available for consultation.",
+                welcomeText2: "Step forth and select thy language to commence thy journey to wellness.",
+                webformText: "Fill Medical Form",
+                chatText: "Chat with Physician",
+                languageTitle: "Select Your Language",
+                footerText: "By Royal Decree, healing for all subjects of the realm"
+            },
+            es: {
+                subtitle: "Reino de la Curación",
+                welcomeText1: "¡Oíd, Oíd! Por decreto real, los médicos de la corte de Su Majestad están ahora disponibles para consulta.",
+                welcomeText2: "Adelante y selecciona tu idioma para comenzar tu viaje hacia el bienestar.",
+                webformText: "Rellenar Formulario Médico",
+                chatText: "Chatear con Médico",
+                languageTitle: "Selecciona Tu Idioma",
+                footerText: "Por Decreto Real, curación para todos los súbditos del reino"
+            },
+            fr: {
+                subtitle: "Royaume de la Guérison",
+                welcomeText1: "Oyez, Oyez ! Par décret royal, les médecins de la cour de Sa Majesté sont maintenant disponibles pour consultation.",
+                welcomeText2: "Avancez et sélectionnez votre langue pour commencer votre voyage vers le bien-être.",
+                webformText: "Remplir le Formulaire Médical",
+                chatText: "Discuter avec un Médecin",
+                languageTitle: "Sélectionnez Votre Langue",
+                footerText: "Par Décret Royal, guérison pour tous les sujets du royaume"
+            },
+            de: {
+                subtitle: "Königreich der Heilung",
+                welcomeText1: "Hört, Hört! Durch königlichen Erlass stehen die Hofärzte Seiner Majestät nun zur Beratung zur Verfügung.",
+                welcomeText2: "Treten Sie vor und wählen Sie Ihre Sprache, um Ihre Reise zum Wohlbefinden zu beginnen.",
+                webformText: "Medizinisches Formular ausfüllen",
+                chatText: "Mit Arzt chatten",
+                languageTitle: "Wählen Sie Ihre Sprache",
+                footerText: "Durch Königlichen Erlass, Heilung für alle Untertanen des Reiches"
+            },
+            it: {
+                subtitle: "Regno della Guarigione",
+                welcomeText1: "Udite, Udite! Per decreto reale, i medici di corte di Sua Maestà sono ora disponibili per consulenza.",
+                welcomeText2: "Fate un passo avanti e selezionate la vostra lingua per iniziare il vostro viaggio verso il benessere.",
+                webformText: "Compila Modulo Medico",
+                chatText: "Chatta con il Medico",
+                languageTitle: "Seleziona la Tua Lingua",
+                footerText: "Per Decreto Reale, guarigione per tutti i sudditi del regno"
+            },
+            pt: {
+                subtitle: "Reino da Cura",
+                welcomeText1: "Ouçam, Ouçam! Por decreto real, os médicos da corte de Sua Majestade estão agora disponíveis para consulta.",
+                welcomeText2: "Avance e selecione seu idioma para começar sua jornada para o bem-estar.",
+                webformText: "Preencher Formulário Médico",
+                chatText: "Conversar com Médico",
+                languageTitle: "Selecione Seu Idioma",
+                footerText: "Por Decreto Real, cura para todos os súditos do reino"
+            }
+        };
+
+        // Function to update page text based on language
+        function updateLanguage(lang) {
+            if (!translations[lang]) return;
+            
+            const trans = translations[lang];
+            
+            document.getElementById('subtitle').textContent = trans.subtitle;
+            document.getElementById('welcomeText1').textContent = trans.welcomeText1;
+            document.getElementById('welcomeText2').textContent = trans.welcomeText2;
+            document.getElementById('webformText').textContent = trans.webformText;
+            document.getElementById('chatText').textContent = trans.chatText;
+            document.getElementById('languageTitle').textContent = trans.languageTitle;
+            document.getElementById('footerText').textContent = trans.footerText;
+            
+            // Update page title with correct language
+            document.title = `Hen Health - ${trans.subtitle}`;
+        }
+        
+        // Function to update navigation links with language parameter
+        function updateLinks(lang) {
+            const webformLink = document.getElementById('webform-link');
+            const chatLink = document.getElementById('chat-link');
+            
+            const webformUrl = new URL(webformLink.href);
+            webformUrl.searchParams.set('language', lang);
+            webformLink.href = webformUrl.toString();
+            
+            const chatUrl = new URL(chatLink.href);
+            chatUrl.searchParams.set('language', lang);
+            chatLink.href = chatUrl.toString();
+        }
+        
+        // Store language selection in localStorage and update UI
         document.addEventListener('DOMContentLoaded', function() {
+            // If there's already a language preference, use it
+            const storedLanguage = localStorage.getItem('language');
+            if (storedLanguage) {
+                updateLanguage(storedLanguage);
+                document.querySelector(`.language-button[data-lang="${storedLanguage}"]`).classList.add('active');
+                updateLinks(storedLanguage);
+            } else {
+                // Default to English
+                document.querySelector('.language-button[data-lang="en"]').classList.add('active');
+                updateLinks('en');
+            }
+            
             const languageButtons = document.querySelectorAll('.language-button');
             
             languageButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
+                button.addEventListener('click', function() {
                     // Store selected language
                     const lang = this.getAttribute('data-lang');
                     localStorage.setItem('language', lang);
                     
-                    // Redirect to login page
-                    window.location.href = this.href;
+                    // Update active button
+                    languageButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update text and links
+                    updateLanguage(lang);
+                    updateLinks(lang);
                 });
             });
         });

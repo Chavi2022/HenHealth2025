@@ -3,348 +3,446 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hen Health - Medical Record</title>
+    <title>Medical Record Summary</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        .medical-record-container {
-            max-width: 900px;
+        .container {
+            max-width: 800px;
             margin: 40px auto;
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .record-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #4a7ab7;
-        }
-        
-        .record-logo {
-            display: flex;
-            align-items: center;
-        }
-        
-        .record-logo img {
-            height: 60px;
-            margin-right: 15px;
-        }
-        
-        .record-logo h1 {
-            font-size: 24px;
-            color: #1E4878;
-            margin: 0;
-        }
-        
-        .record-date {
-            text-align: right;
-            font-size: 14px;
-            color: #666;
+            padding: 20px;
+            background-color: #f2e8c9;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         
         .patient-info {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
             margin-bottom: 30px;
+            padding: 15px;
+            background-color: #e8e1c8;
+            border-radius: 5px;
         }
         
-        .patient-info h2 {
-            margin-top: 0;
-            color: #1E4878;
-            font-size: 20px;
-            margin-bottom: 15px;
-        }
-        
-        .patient-table {
+        table {
             width: 100%;
             border-collapse: collapse;
         }
         
-        .patient-table td {
+        table, th, td {
+            border: 1px solid #8b7355;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #d9cba8;
+        }
+        
+        .record-table tbody tr:nth-child(even) {
+            background-color: #f9f3e3;
+        }
+        
+        .record-table tbody tr:nth-child(odd) {
+            background-color: #e8e1c8;
+        }
+        
+        #back-button {
+            margin-bottom: 20px;
             padding: 8px 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .patient-table td:first-child {
-            font-weight: bold;
-            width: 150px;
-        }
-        
-        .diagnosis-section {
-            margin-bottom: 30px;
-        }
-        
-        .diagnosis-section h2 {
-            color: #1E4878;
-            font-size: 20px;
-            margin-bottom: 15px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .diagnosis-box {
-            background-color: #EFF7FF;
-            padding: 15px;
-            border-left: 4px solid #4a7ab7;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-        
-        .doctor-recommendations {
-            background-color: #FFF8E5;
-            padding: 15px;
-            border-left: 4px solid #DAA520;
-            border-radius: 4px;
-            margin-bottom: 30px;
-        }
-        
-        .doctor-recommendations h3 {
-            margin-top: 0;
-            color: #8B6914;
-        }
-        
-        .conversation-section {
-            margin-bottom: 30px;
-        }
-        
-        .conversation-section h2 {
-            color: #1E4878;
-            font-size: 20px;
-            margin-bottom: 15px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .conversation-box {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            padding: 15px;
-        }
-        
-        .conversation-line {
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #f5f5f5;
-        }
-        
-        .conversation-physician {
-            color: #1E4878;
-        }
-        
-        .conversation-patient {
-            color: #333;
-        }
-        
-        .footer-section {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            font-size: 14px;
-            color: #888;
-        }
-        
-        .action-bar {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        
-        .action-button {
-            padding: 10px 15px;
-            background-color: #4a7ab7;
-            color: white;
+            background-color: #8b5a2b;
+            color: #f2e8c9;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
-            display: flex;
+        }
+        
+        #back-button:hover {
+            background-color: #6b4423;
+        }
+        
+        #export-button {
+            margin-top: 20px;
+            padding: 8px 15px;
+            background-color: #4d6a12;
+            color: #f2e8c9;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        #export-button:hover {
+            background-color: #3a5009;
+        }
+        
+        .loading-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
             align-items: center;
+            justify-content: center;
+            flex-direction: column;
         }
         
-        .action-button i {
-            margin-right: 8px;
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #8b5a2b;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            margin-bottom: 15px;
         }
         
-        .action-button.secondary {
-            background-color: #6c757d;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
-        .action-button.download {
-            background-color: #28a745;
+        .language-selection {
+            margin-bottom: 20px;
         }
         
-        .export-options {
+        .language-buttons {
             display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
         }
         
-        .export-options button {
-            margin-left: 10px;
+        .language-button {
+            padding: 8px 15px;
+            background-color: #d9cba8;
+            border: 2px solid #8b7355;
+            cursor: pointer;
+            transition: all 0.3s;
         }
         
-        @media print {
-            body {
-                background-color: white;
-            }
-            
-            .medical-record-container {
-                box-shadow: none;
-                margin: 0;
-                padding: 15px;
-            }
-            
-            .action-bar {
-                display: none;
-            }
-            
-            .conversation-box {
-                max-height: none;
-                overflow: visible;
-            }
+        .language-button.active {
+            background-color: #8b5a2b;
+            color: #f2e8c9;
         }
     </style>
 </head>
-<body>
-    <div class="medical-record-container">
-        <div class="action-bar">
-            <button class="action-button secondary" onclick="window.history.back()">
-                <i class="fas fa-arrow-left"></i> Back
-            </button>
-            <div class="export-options">
-                <button class="action-button download" onclick="exportAsPDF()">
-                    <i class="fas fa-file-pdf"></i> Download PDF
-                </button>
-                <button class="action-button download" onclick="window.print()">
-                    <i class="fas fa-print"></i> Print
-                </button>
+<body class="medieval-theme">
+    <div class="container parchment">
+        <button id="back-button" onclick="window.history.back()">Back</button>
+        
+        <div class="language-selection">
+            <label id="language-label">Select Language:</label>
+            <div class="language-buttons">
+                <button type="button" class="language-button" data-lang="en">English</button>
+                <button type="button" class="language-button" data-lang="es">Español</button>
+                <button type="button" class="language-button" data-lang="fr">Français</button>
+                <button type="button" class="language-button" data-lang="de">Deutsch</button>
+                <button type="button" class="language-button" data-lang="it">Italiano</button>
+                <button type="button" class="language-button" data-lang="pt">Português</button>
             </div>
         </div>
         
-        <div class="record-header">
-            <div class="record-logo">
-                <h1>Hen Health Medical Record</h1>
-            </div>
-            <div class="record-date">
-                <p>Generated on: {{ current_date }}</p>
-            </div>
-        </div>
-        
+        <h1 id="medical-form-title">Medical Record Summary</h1>
+
+        <!-- Patient Information -->
         <div class="patient-info">
-            <h2>Patient Information</h2>
-            <table class="patient-table">
+            <h2 id="patient-info-heading">Patient Information</h2>
+            <table>
                 <tr>
-                    <td>Name:</td>
-                    <td>{{ record.name }}</td>
+                    <td><strong id="first-name-label">First Name</strong></td>
+                    <td id="first-name">{{ record.fname if record.fname else "Not provided" }}</td>
+                    <td><strong id="last-name-label">Last Name</strong></td>
+                    <td id="last-name">{{ record.lname if record.lname else "Not provided" }}</td>
                 </tr>
                 <tr>
-                    <td>Date of Birth:</td>
-                    <td>{{ record.demographics.dob if record.demographics and record.demographics.dob else 'Not provided' }}</td>
+                    <td><strong id="age-label">Age</strong></td>
+                    <td id="age">{{ record.age if record.age else "Not provided" }}</td>
+                    <td><strong id="gender-label">Gender</strong></td>
+                    <td id="gender">{{ record.gender if record.gender else "Not provided" }}</td>
                 </tr>
                 <tr>
-                    <td>Sex:</td>
-                    <td>{{ record.demographics.sex if record.demographics and record.demographics.sex else 'Not provided' }}</td>
-                </tr>
-                <tr>
-                    <td>Height:</td>
-                    <td>{{ record.demographics.height if record.demographics and record.demographics.height else 'Not provided' }}</td>
-                </tr>
-                <tr>
-                    <td>Weight:</td>
-                    <td>{{ record.demographics.weight if record.demographics and record.demographics.weight else 'Not provided' }}</td>
-                </tr>
-                <tr>
-                    <td>Medical History:</td>
-                    <td>{{ record.demographics.medical_history if record.demographics and record.demographics.medical_history else 'None reported' }}</td>
+                    <td><strong id="height-label">Height (cm)</strong></td>
+                    <td id="height">{{ record.height if record.height else "Not provided" }}</td>
+                    <td><strong id="weight-label">Weight (kg)</strong></td>
+                    <td id="weight">{{ record.weight if record.weight else "Not provided" }}</td>
                 </tr>
             </table>
         </div>
-        
-        {% if record.entries and record.entries|length > 0 %}
-            {% for entry in record.entries %}
-                <div class="diagnosis-section">
-                    <h2>Consultation Summary ({{ entry.time }})</h2>
-                    
-                    <div class="diagnosis-box">
-                        <h3>Assessed Condition:</h3>
-                        <p>{{ entry.diagnosis }}</p>
-                    </div>
-                    
-                    <div class="doctor-recommendations">
-                        <h3>Recommendations for Healthcare Provider:</h3>
-                        <p>{{ entry.recommendations }}</p>
-                    </div>
-                    
-                    <div class="conversation-section">
-                        <h2>Consultation Transcript</h2>
-                        <div class="conversation-box">
-                            {% for line in entry.conversation %}
-                                <div class="conversation-line">
-                                    {% if 'Physician:' in line %}
-                                        <div class="conversation-physician">{{ line }}</div>
-                                    {% else %}
-                                        <div class="conversation-patient">{{ line }}</div>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        {% else %}
-            <div class="diagnosis-section">
-                <h2>No Consultations Found</h2>
-                <p>This patient has not completed any consultations yet.</p>
-            </div>
-        {% endif %}
-        
-        <div class="footer-section">
-            <p>This document is a record of an AI-assisted medical consultation. Please consult with a healthcare professional for proper diagnosis and treatment.</p>
-            <p>&copy; {{ current_year }} Hen Health. All rights reserved.</p>
+
+        <!-- Chronological Medical Records Summary -->
+        <div class="record-summary">
+            <h2 id="record-summary-heading">Chronological Medical Records Summary</h2>
+            <table id="record-table" class="record-table">
+                <thead>
+                    <tr>
+                        <th id="date-time-header">Date/Time</th>
+                        <th id="encounter-summary-header">Encounter Summary</th>
+                    </tr>
+                </thead>
+                <tbody id="record-entries">
+                    {% if record.entries and record.entries|length > 0 %}
+                        {% for entry in record.entries %}
+                            {% if 'time' in entry and 'diagnosis' in entry %}
+                                <!-- Legacy format -->
+                                <tr>
+                                    <td>{{ entry.time }}</td>
+                                    <td>{{ entry.diagnosis }}</td>
+                                </tr>
+                            {% else %}
+                                <!-- New format with date as key -->
+                                {% for date, summary in entry.items() %}
+                                <tr>
+                                    <td>{{ date }}</td>
+                                    <td>
+                                        {% for item in summary %}
+                                            {{ item }}<br>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="2" id="no-entries-text">No medical entries found.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
+        
+        <!-- Export Button -->
+        <form id="export-form" method="POST" action="{{ url_for('export_record') }}" target="_blank">
+            {% if record.identifier %}
+                <input type="hidden" name="identifier" value="{{ record.identifier }}">
+            {% else %}
+                <input type="hidden" name="user_id" value="{{ request.args.get('user_id', '') }}">
+            {% endif %}
+            <input type="hidden" name="language" id="selected_language" value="{{ record.language if record.language else 'en' }}">
+            <input type="hidden" name="format" value="pdf">
+            <button type="submit" id="export-button">Export as PDF</button>
+        </form>
     </div>
+    
+    <div id="loading-screen" class="loading-screen">
+        <div class="spinner"></div>
+        <p id="loading-text">Loading...</p>
+    </div>
+
+    <script>
+        // Language translations
+        const translations = {
+            en: {
+                back: "Back",
+                languageLabel: "Select Language:",
+                medicalRecordTitle: "Medical Record Summary",
+                patientInfoHeading: "Patient Information",
+                firstNameLabel: "First Name",
+                lastNameLabel: "Last Name",
+                ageLabel: "Age",
+                genderLabel: "Gender",
+                heightLabel: "Height (cm)",
+                weightLabel: "Weight (kg)",
+                recordSummaryHeading: "Chronological Medical Records Summary",
+                dateTimeHeader: "Date/Time",
+                encounterSummaryHeader: "Encounter Summary",
+                noEntriesText: "No medical entries found.",
+                exportButton: "Export as PDF",
+                loading: "Loading..."
+            },
+            es: {
+                back: "Volver",
+                languageLabel: "Seleccionar Idioma:",
+                medicalRecordTitle: "Resumen de Historial Médico",
+                patientInfoHeading: "Información del Paciente",
+                firstNameLabel: "Nombre",
+                lastNameLabel: "Apellido",
+                ageLabel: "Edad",
+                genderLabel: "Género",
+                heightLabel: "Altura (cm)",
+                weightLabel: "Peso (kg)",
+                recordSummaryHeading: "Resumen Cronológico de Registros Médicos",
+                dateTimeHeader: "Fecha/Hora",
+                encounterSummaryHeader: "Resumen de Consulta",
+                noEntriesText: "No se encontraron registros médicos.",
+                exportButton: "Exportar como PDF",
+                loading: "Cargando..."
+            },
+            fr: {
+                back: "Retour",
+                languageLabel: "Sélectionner la Langue:",
+                medicalRecordTitle: "Résumé du Dossier Médical",
+                patientInfoHeading: "Informations du Patient",
+                firstNameLabel: "Prénom",
+                lastNameLabel: "Nom",
+                ageLabel: "Âge",
+                genderLabel: "Genre",
+                heightLabel: "Taille (cm)",
+                weightLabel: "Poids (kg)",
+                recordSummaryHeading: "Résumé Chronologique des Dossiers Médicaux",
+                dateTimeHeader: "Date/Heure",
+                encounterSummaryHeader: "Résumé de la Consultation",
+                noEntriesText: "Aucun dossier médical trouvé.",
+                exportButton: "Exporter en PDF",
+                loading: "Chargement..."
+            },
+            de: {
+                back: "Zurück",
+                languageLabel: "Sprache auswählen:",
+                medicalRecordTitle: "Zusammenfassung der Krankenakte",
+                patientInfoHeading: "Patienteninformationen",
+                firstNameLabel: "Vorname",
+                lastNameLabel: "Nachname",
+                ageLabel: "Alter",
+                genderLabel: "Geschlecht",
+                heightLabel: "Größe (cm)",
+                weightLabel: "Gewicht (kg)",
+                recordSummaryHeading: "Chronologische Zusammenfassung der Krankenakte",
+                dateTimeHeader: "Datum/Uhrzeit",
+                encounterSummaryHeader: "Zusammenfassung des Termins",
+                noEntriesText: "Keine medizinischen Einträge gefunden.",
+                exportButton: "Als PDF exportieren",
+                loading: "Wird geladen..."
+            },
+            it: {
+                back: "Indietro",
+                languageLabel: "Seleziona Lingua:",
+                medicalRecordTitle: "Riepilogo Cartella Clinica",
+                patientInfoHeading: "Informazioni sul Paziente",
+                firstNameLabel: "Nome",
+                lastNameLabel: "Cognome",
+                ageLabel: "Età",
+                genderLabel: "Genere",
+                heightLabel: "Altezza (cm)",
+                weightLabel: "Peso (kg)",
+                recordSummaryHeading: "Riepilogo Cronologico delle Cartelle Cliniche",
+                dateTimeHeader: "Data/Ora",
+                encounterSummaryHeader: "Riepilogo della Visita",
+                noEntriesText: "Nessuna cartella clinica trovata.",
+                exportButton: "Esporta come PDF",
+                loading: "Caricamento..."
+            },
+            pt: {
+                back: "Voltar",
+                languageLabel: "Selecionar Idioma:",
+                medicalRecordTitle: "Resumo do Registro Médico",
+                patientInfoHeading: "Informações do Paciente",
+                firstNameLabel: "Nome",
+                lastNameLabel: "Sobrenome",
+                ageLabel: "Idade",
+                genderLabel: "Gênero",
+                heightLabel: "Altura (cm)",
+                weightLabel: "Peso (kg)",
+                recordSummaryHeading: "Resumo Cronológico dos Registros Médicos",
+                dateTimeHeader: "Data/Hora",
+                encounterSummaryHeader: "Resumo da Consulta",
+                noEntriesText: "Nenhum registro médico encontrado.",
+                exportButton: "Exportar como PDF",
+                loading: "Carregando..."
+            }
+        };
+
+        // Function to update page language
+        function updateLanguage(lang) {
+            if (!translations[lang]) return;
+            
+            const trans = translations[lang];
+            
+            // Update text elements
+            document.getElementById('back-button').textContent = trans.back;
+            document.getElementById('language-label').textContent = trans.languageLabel;
+            document.getElementById('medical-form-title').textContent = trans.medicalRecordTitle;
+            document.getElementById('patient-info-heading').textContent = trans.patientInfoHeading;
+            document.getElementById('first-name-label').textContent = trans.firstNameLabel;
+            document.getElementById('last-name-label').textContent = trans.lastNameLabel;
+            document.getElementById('age-label').textContent = trans.ageLabel;
+            document.getElementById('gender-label').textContent = trans.genderLabel;
+            document.getElementById('height-label').textContent = trans.heightLabel;
+            document.getElementById('weight-label').textContent = trans.weightLabel;
+            document.getElementById('record-summary-heading').textContent = trans.recordSummaryHeading;
+            document.getElementById('date-time-header').textContent = trans.dateTimeHeader;
+            document.getElementById('encounter-summary-header').textContent = trans.encounterSummaryHeader;
+            
+            // Check if no entries message exists and update it
+            const noEntriesElement = document.getElementById('no-entries-text');
+            if (noEntriesElement) {
+                noEntriesElement.textContent = trans.noEntriesText;
+            }
+            
+            document.getElementById('export-button').textContent = trans.exportButton;
+            document.getElementById('loading-text').textContent = trans.loading;
+            
+            // Update hidden language field
+            document.getElementById('selected_language').value = lang;
+        }
+        
+        // Get language from localStorage (set in index.html)
+        function getLanguageFromStorage() {
+            return localStorage.getItem('language') || 'en';
+        }
+        
+        // Set active language button
+        function setActiveLanguageButton(lang) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.language-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to selected language button
+            const selectedButton = document.querySelector(`.language-button[data-lang="${lang}"]`);
+            if (selectedButton) {
+                selectedButton.classList.add('active');
+            }
+        }
+        
+        // Initialize page with language from localStorage or record
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get language preference - prioritize URL parameter first, then record, then localStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlLang = urlParams.get('language');
+            const recordLang = document.getElementById('selected_language').value;
+            const storedLang = getLanguageFromStorage();
+            
+            // Determine which language to use
+            const language = urlLang || recordLang || storedLang || 'en';
+            
+            // Update UI with selected language
+            updateLanguage(language);
+            setActiveLanguageButton(language);
+            
+            // Add event listeners to language buttons
+            document.querySelectorAll('.language-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const lang = this.getAttribute('data-lang');
+                    
+                    // Store language preference
+                    localStorage.setItem('language', lang);
+                    
+                    // Update URL with new language without reloading the page
+                    const url = new URL(window.location);
+                    url.searchParams.set('language', lang);
+                    window.history.pushState({}, '', url);
+                    
+                    // Update UI
+                    setActiveLanguageButton(lang);
+                    updateLanguage(lang);
+                });
+            });
+        });
+        
+        // Show loading when export button is clicked
+        document.getElementById('export-form').addEventListener('submit', function() {
+            document.getElementById('loading-screen').style.display = 'flex';
+            setTimeout(function() {
+                document.getElementById('loading-screen').style.display = 'none';
+            }, 2000);
+        });
+    </script>
 </body>
 </html>
-<script>
-    function exportAsPDF() {
-        // Create form for PDF export
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/api/export_record';
-        
-        // Add user_id parameter
-        const userIdInput = document.createElement('input');
-        userIdInput.type = 'hidden';
-        userIdInput.name = 'user_id';
-        userIdInput.value = '{{ request.args.get("user_id") }}';
-        form.appendChild(userIdInput);
-        
-        // Add format parameter
-        const formatInput = document.createElement('input');
-        formatInput.type = 'hidden';
-        formatInput.name = 'format';
-        formatInput.value = 'pdf';
-        form.appendChild(formatInput);
-        
-        // Submit the form
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
-    }
-</script>

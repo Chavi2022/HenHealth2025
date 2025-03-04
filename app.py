@@ -301,8 +301,8 @@ def generate_doctor_recommendations(diagnosis, demographics):
     recommendations = generate_openai_response(prompt)
     return recommendations if recommendations else "No specific recommendations available."
 
-def generate_medical_record_pdf(record):
-    """Generate a PDF medical record"""
+def generate_medical_record_pdf(record, title="Hen Health Medical Record", language="en"):
+    """Generate a PDF medical record with language support"""
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter)
     styles = getSampleStyleSheet()
@@ -323,24 +323,151 @@ def generate_medical_record_pdf(record):
                              fontSize=12, 
                              spaceAfter=8))
     
+    # Translations for PDF text
+    translations = {
+        'en': {
+            'patientInfo': 'Patient Information',
+            'name': 'Name:',
+            'dob': 'Date of Birth:',
+            'sex': 'Sex:',
+            'height': 'Height:',
+            'weight': 'Weight:',
+            'medicalHistory': 'Medical History:',
+            'notProvided': 'Not provided',
+            'noneReported': 'None reported',
+            'consultation': 'Consultation',
+            'assessedCondition': 'Assessed Condition:',
+            'noDiagnosis': 'No diagnosis provided',
+            'recommendations': 'Recommendations for Healthcare Provider:',
+            'noRecommendations': 'No recommendations provided',
+            'transcript': 'Consultation Transcript:',
+            'noConsultations': 'No Consultations Found',
+            'noConsultationsDesc': 'This patient has not completed any consultations yet.',
+            'disclaimer': 'This document is a record of an AI-assisted medical consultation. Please consult with a healthcare professional for proper diagnosis and treatment.'
+        },
+        'es': {
+            'patientInfo': 'Información del Paciente',
+            'name': 'Nombre:',
+            'dob': 'Fecha de Nacimiento:',
+            'sex': 'Sexo:',
+            'height': 'Altura:',
+            'weight': 'Peso:',
+            'medicalHistory': 'Historial Médico:',
+            'notProvided': 'No proporcionado',
+            'noneReported': 'Ninguno reportado',
+            'consultation': 'Consulta',
+            'assessedCondition': 'Condición Evaluada:',
+            'noDiagnosis': 'No se proporcionó diagnóstico',
+            'recommendations': 'Recomendaciones para el Proveedor de Salud:',
+            'noRecommendations': 'No se proporcionaron recomendaciones',
+            'transcript': 'Transcripción de la Consulta:',
+            'noConsultations': 'No se Encontraron Consultas',
+            'noConsultationsDesc': 'Este paciente aún no ha completado ninguna consulta.',
+            'disclaimer': 'Este documento es un registro de una consulta médica asistida por IA. Por favor consulte con un profesional de la salud para un diagnóstico y tratamiento adecuados.'
+        },
+        'fr': {
+            'patientInfo': 'Informations du Patient',
+            'name': 'Nom:',
+            'dob': 'Date de Naissance:',
+            'sex': 'Sexe:',
+            'height': 'Taille:',
+            'weight': 'Poids:',
+            'medicalHistory': 'Antécédents Médicaux:',
+            'notProvided': 'Non fourni',
+            'noneReported': 'Aucun signalé',
+            'consultation': 'Consultation',
+            'assessedCondition': 'Condition Évaluée:',
+            'noDiagnosis': 'Aucun diagnostic fourni',
+            'recommendations': 'Recommandations pour le Prestataire de Soins:',
+            'noRecommendations': 'Aucune recommandation fournie',
+            'transcript': 'Transcription de la Consultation:',
+            'noConsultations': 'Aucune Consultation Trouvée',
+            'noConsultationsDesc': 'Ce patient n\'a pas encore effectué de consultations.',
+            'disclaimer': 'Ce document est un enregistrement d\'une consultation médicale assistée par IA. Veuillez consulter un professionnel de la santé pour un diagnostic et un traitement appropriés.'
+        },
+        'de': {
+            'patientInfo': 'Patienteninformationen',
+            'name': 'Name:',
+            'dob': 'Geburtsdatum:',
+            'sex': 'Geschlecht:',
+            'height': 'Größe:',
+            'weight': 'Gewicht:',
+            'medicalHistory': 'Medizinische Vorgeschichte:',
+            'notProvided': 'Nicht angegeben',
+            'noneReported': 'Keine angegeben',
+            'consultation': 'Beratung',
+            'assessedCondition': 'Beurteilter Zustand:',
+            'noDiagnosis': 'Keine Diagnose angegeben',
+            'recommendations': 'Empfehlungen für den Gesundheitsdienstleister:',
+            'noRecommendations': 'Keine Empfehlungen angegeben',
+            'transcript': 'Beratungsprotokoll:',
+            'noConsultations': 'Keine Beratungen Gefunden',
+            'noConsultationsDesc': 'Dieser Patient hat noch keine Beratungen abgeschlossen.',
+            'disclaimer': 'Dieses Dokument ist eine Aufzeichnung einer KI-unterstützten medizinischen Beratung. Bitte konsultieren Sie einen Arzt für eine angemessene Diagnose und Behandlung.'
+        },
+        'it': {
+            'patientInfo': 'Informazioni sul Paziente',
+            'name': 'Nome:',
+            'dob': 'Data di Nascita:',
+            'sex': 'Sesso:',
+            'height': 'Altezza:',
+            'weight': 'Peso:',
+            'medicalHistory': 'Storia Medica:',
+            'notProvided': 'Non fornito',
+            'noneReported': 'Nessuno segnalato',
+            'consultation': 'Consultazione',
+            'assessedCondition': 'Condizione Valutata:',
+            'noDiagnosis': 'Nessuna diagnosi fornita',
+            'recommendations': 'Raccomandazioni per il Fornitore di Assistenza Sanitaria:',
+            'noRecommendations': 'Nessuna raccomandazione fornita',
+            'transcript': 'Trascrizione della Consultazione:',
+            'noConsultations': 'Nessuna Consultazione Trovata',
+            'noConsultationsDesc': 'Questo paziente non ha ancora completato alcuna consultazione.',
+            'disclaimer': 'Questo documento è una registrazione di una consultazione medica assistita da IA. Si prega di consultare un professionista sanitario per una diagnosi e un trattamento adeguati.'
+        },
+        'pt': {
+            'patientInfo': 'Informações do Paciente',
+            'name': 'Nome:',
+            'dob': 'Data de Nascimento:',
+            'sex': 'Sexo:',
+            'height': 'Altura:',
+            'weight': 'Peso:',
+            'medicalHistory': 'Histórico Médico:',
+            'notProvided': 'Não fornecido',
+            'noneReported': 'Nenhum relatado',
+            'consultation': 'Consulta',
+            'assessedCondition': 'Condição Avaliada:',
+            'noDiagnosis': 'Nenhum diagnóstico fornecido',
+            'recommendations': 'Recomendações para o Profissional de Saúde:',
+            'noRecommendations': 'Nenhuma recomendação fornecida',
+            'transcript': 'Transcrição da Consulta:',
+            'noConsultations': 'Nenhuma Consulta Encontrada',
+            'noConsultationsDesc': 'Este paciente ainda não completou nenhuma consulta.',
+            'disclaimer': 'Este documento é um registro de uma consulta médica assistida por IA. Por favor, consulte um profissional de saúde para diagnóstico e tratamento adequados.'
+        }
+    }
+    
+    # Get translations for selected language or fallback to English
+    trans = translations.get(language, translations['en'])
+    
     # Build the PDF content
     elements = []
     
     # Title
-    elements.append(Paragraph("Hen Health Medical Record", styles['Title']))
+    elements.append(Paragraph(title, styles['Title']))
     elements.append(Spacer(1, 0.25*inch))
     
     # Patient information
-    elements.append(Paragraph("Patient Information", styles['Subtitle']))
+    elements.append(Paragraph(trans['patientInfo'], styles['Subtitle']))
     
     # Create patient info table
     patient_data = [
-        ["Name:", record.get('name', 'Unknown Patient')],
-        ["Date of Birth:", record.get('demographics', {}).get('dob', 'Not provided')],
-        ["Sex:", record.get('demographics', {}).get('sex', 'Not provided')],
-        ["Height:", record.get('demographics', {}).get('height', 'Not provided')],
-        ["Weight:", record.get('demographics', {}).get('weight', 'Not provided')],
-        ["Medical History:", record.get('demographics', {}).get('medical_history', 'None reported')],
+        [trans['name'], record.get('name', trans['notProvided'])],
+        [trans['dob'], record.get('demographics', {}).get('dob', trans['notProvided'])],
+        [trans['sex'], record.get('demographics', {}).get('sex', trans['notProvided'])],
+        [trans['height'], record.get('demographics', {}).get('height', trans['notProvided'])],
+        [trans['weight'], record.get('demographics', {}).get('weight', trans['notProvided'])],
+        [trans['medicalHistory'], record.get('demographics', {}).get('medical_history', trans['noneReported'])],
     ]
     
     patient_table = Table(patient_data, colWidths=[1.5*inch, 4*inch])
@@ -360,50 +487,61 @@ def generate_medical_record_pdf(record):
     # Consultations
     if record.get('entries') and len(record['entries']) > 0:
         for i, entry in enumerate(record['entries']):
-            elements.append(Paragraph(f"Consultation {i+1} ({entry.get('time', 'Unknown date')})", styles['Subtitle']))
+            elements.append(Paragraph(f"{trans['consultation']} {i+1} ({entry.get('time', 'Unknown date')})", styles['Subtitle']))
             
-            # Diagnosis
-            elements.append(Paragraph("Assessed Condition:", styles['Section']))
-            elements.append(Paragraph(entry.get('diagnosis', 'No diagnosis provided'), styles['Normal']))
-            elements.append(Spacer(1, 0.1*inch))
-            
-            # Recommendations
-            elements.append(Paragraph("Recommendations for Healthcare Provider:", styles['Section']))
-            elements.append(Paragraph(entry.get('recommendations', 'No recommendations provided'), styles['Normal']))
-            elements.append(Spacer(1, 0.1*inch))
-            
-            # Conversation
-            elements.append(Paragraph("Consultation Transcript:", styles['Section']))
-            
-            conversation_data = []
-            for line in entry.get('conversation', []):
-                if line.startswith('Physician:'):
-                    conversation_data.append([line, ''])
-                else:
-                    conversation_data.append(['', line])
-            
-            if conversation_data:
-                conversation_table = Table(conversation_data, colWidths=[3*inch, 3*inch])
-                conversation_table.setStyle(TableStyle([
-                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-                    ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
-                    ('PADDINGTOP', (0, 0), (-1, -1), 4),
-                    ('PADDINGBOTTOM', (0, 0), (-1, -1), 4),
-                    ('PADDINGLEFT', (0, 0), (-1, -1), 4),
-                    ('PADDINGRIGHT', (0, 0), (-1, -1), 4),
-                    ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
-                ]))
+            # If entry is in the new format with dates as keys
+            if isinstance(entry, dict) and not ('time' in entry or 'diagnosis' in entry):
+                for date, details in entry.items():
+                    # For the new format, we don't have a diagnosis or recommendations
+                    elements.append(Paragraph(f"Date: {date}", styles['Section']))
+                    elements.append(Paragraph("Details:", styles['Section']))
+                    
+                    # Join the bullet points
+                    details_text = "\n".join(details)
+                    elements.append(Paragraph(details_text, styles['Normal']))
+                    elements.append(Spacer(1, 0.1*inch))
+            else:
+                # For the old format with diagnosis and recommendations
+                elements.append(Paragraph(trans['assessedCondition'], styles['Section']))
+                elements.append(Paragraph(entry.get('diagnosis', trans['noDiagnosis']), styles['Normal']))
+                elements.append(Spacer(1, 0.1*inch))
                 
-                elements.append(conversation_table)
+                # Recommendations
+                elements.append(Paragraph(trans['recommendations'], styles['Section']))
+                elements.append(Paragraph(entry.get('recommendations', trans['noRecommendations']), styles['Normal']))
+                elements.append(Spacer(1, 0.1*inch))
+                
+                # Conversation
+                elements.append(Paragraph(trans['transcript'], styles['Section']))
+                
+                conversation_data = []
+                for line in entry.get('conversation', []):
+                    if line.startswith('Physician:'):
+                        conversation_data.append([line, ''])
+                    else:
+                        conversation_data.append(['', line])
+                if conversation_data:
+                    conversation_table = Table(conversation_data, colWidths=[3*inch, 3*inch])
+                    conversation_table.setStyle(TableStyle([
+                        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+                        ('PADDINGTOP', (0, 0), (-1, -1), 4),
+                        ('PADDINGBOTTOM', (0, 0), (-1, -1), 4),
+                        ('PADDINGLEFT', (0, 0), (-1, -1), 4),
+                        ('PADDINGRIGHT', (0, 0), (-1, -1), 4),
+                        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+                    ]))
+                    
+                    elements.append(conversation_table)
             
             elements.append(Spacer(1, 0.25*inch))
     else:
-        elements.append(Paragraph("No Consultations Found", styles['Subtitle']))
-        elements.append(Paragraph("This patient has not completed any consultations yet.", styles['Normal']))
+        elements.append(Paragraph(trans['noConsultations'], styles['Subtitle']))
+        elements.append(Paragraph(trans['noConsultationsDesc'], styles['Normal']))
     
     # Disclaimer
     elements.append(Spacer(1, 0.5*inch))
-    elements.append(Paragraph("This document is a record of an AI-assisted medical consultation. Please consult with a healthcare professional for proper diagnosis and treatment.", styles['Italic']))
+    elements.append(Paragraph(trans['disclaimer'], styles['Italic']))
     
     # Build the document
     doc.build(elements)
@@ -471,10 +609,27 @@ def text_to_speech(text, language="en"):
         logger.error(f"Error in text_to_speech: {str(e)}")
         return None
 
+# Utility functions for medical records
+def read_medical_record(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            return json.load(file)
+    return {}
+
+def write_medical_record(data, file_path):
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    with open(file_path, "w") as file:
+        json.dump(data, file, indent=4)
+
 # Routes
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/webform')
+def webform():
+    return render_template('webform.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -484,7 +639,7 @@ def login():
         user_ailment = request.form.get('user_ailment', '')
         
         # Set default language to English
-        language = 'en'
+        language = request.form.get('language', 'en')
         
         # Store in session
         session['user_name'] = user_name
@@ -502,6 +657,7 @@ def login():
         # Add initial ailment to medical record
         if user_ailment:
             session['initial_ailment'] = user_ailment
+            session['current_concern'] = user_ailment
         
         # Initialize demographics
         session['demographics'] = {}
@@ -518,6 +674,96 @@ def set_language():
     language = request.form.get('language')
     session['language'] = language
     return jsonify({'status': 'success'})
+
+@app.route('/api/set_language', methods=['POST'])
+def api_set_language():
+    """API endpoint for changing language preference"""
+    data = request.get_json()
+    language = data.get('language', 'en')
+    
+    # Store language preference in session
+    session['language'] = language
+    
+    return jsonify({
+        'status': 'success',
+        'language': language
+    })
+
+@app.route("/submit_webform", methods=["POST"])
+def submit_webform():
+    # Get form data
+    first_name = request.form.get("first_name")
+    last_name = request.form.get("last_name")
+    dob = request.form.get("dob")
+    gender = request.form.get("gender")
+    height = request.form.get("height")
+    weight = request.form.get("weight")
+    reason = request.form.get("reason")
+    language = request.form.get("language", "en")
+    
+    # Calculate age from DOB
+    birth_date = datetime.strptime(dob, "%Y-%m-%d")
+    today = datetime.now()
+    age = (
+        today.year
+        - birth_date.year
+        - ((today.month, today.day) < (birth_date.month, birth_date.day))
+    )
+    
+    # Create a unique identifier for this patient
+    identifier = str(uuid.uuid4())
+    
+    # Process reason for visit with GPT
+    gpt_prompt = f"Given the following description of a patient's reason for visit, extract and convert it into a concise, organized bulleted list of symptoms and concerns. Do not use 'You' or 'Your' in the response. '{reason}'"
+    processed_reason = generate_openai_response(gpt_prompt)
+    
+    if processed_reason:
+        processed_reason = processed_reason.strip().split("\n")
+    else:
+        processed_reason = [
+            f"- {reason}"
+        ]  # Fallback to original reason if GPT processing fails
+    
+    # Construct the JSON file path using the unique identifier
+    json_file = f"medical_record_{identifier}.json"
+    json_file_path = os.path.join(app.root_path, "static", "user_data", json_file)
+    
+    # Create user history record
+    user_history = {
+        "fname": first_name,
+        "lname": last_name,
+        "age": str(age),
+        "dob": dob,
+        "gender": gender,
+        "height": height,
+        "weight": weight,
+        "identifier": identifier,
+        "language": language,
+        "entries": []
+    }
+    
+    # Add new entry
+    current_time = datetime.now().strftime("%m/%d/%Y %I:%M%p")
+    new_entry = {current_time: ["- Patient filled out webform."] + processed_reason}
+    user_history["entries"].append(new_entry)
+    
+    # Store in session for compatibility with existing code
+    session['user_name'] = f"{first_name} {last_name}"
+    session['demographics'] = {
+        'first_name': first_name,
+        'last_name': last_name,
+        'age': str(age),
+        'sex': gender.lower(),
+        'height': height,
+        'weight': weight,
+        'dob': dob
+    }
+    
+    # Save the medical record to a file
+    write_medical_record(user_history, json_file_path)
+    
+    # Redirect to medical record page
+    return redirect(url_for("medical_record", identifier=identifier, language=language))
 
 @app.route('/chat')
 def chat():
@@ -836,65 +1082,134 @@ def end_chat():
     
     return jsonify({
         'status': 'success',
-        'redirect': f'/medical-record?user_id={user_id}'
+        'redirect': f'/medical-form?user_id={user_id}'
     })
 
-@app.route('/medical-record')
+@app.route('/medical-form')
 def medical_record():
+    identifier = request.args.get('identifier')
     user_id = request.args.get('user_id')
+    language = request.args.get('language', 'en')
     
-    if not user_id:
-        return "User identifier is required", 400
-    
-    # Prepare record data
-    record = {
-        'name': session.get('user_name', 'Unknown Patient'),
-        'demographics': session.get('demographics', {}),
-        'entries': session.get('medical_entries', [])
-    }
+    # If an identifier is provided, load from JSON file
+    if identifier:
+        json_file = f"medical_record_{identifier}.json"
+        json_file_path = os.path.join(app.root_path, "static", "user_data", json_file)
+        
+        if os.path.exists(json_file_path):
+            with open(json_file_path, 'r') as file:
+                record = json.load(file)
+        else:
+            # If JSON doesn't exist, create a default structure
+            record = {
+                'fname': 'Unknown',
+                'lname': 'Patient',
+                'entries': [],
+                'identifier': identifier,
+                'language': language
+            }
+    # If user_id is provided, load from session (legacy method)
+    elif user_id:
+        # Store the user's chosen language in the session
+        if language and language != session.get('language'):
+            session['language'] = language
+            
+        record = {
+            'name': session.get('user_name', 'Unknown Patient'),
+            'fname': session.get('user_name', '').split()[0] if session.get('user_name', '') else 'Unknown',
+            'lname': session.get('user_name', '').split()[-1] if len(session.get('user_name', '').split()) > 1 else 'Patient',
+            'demographics': session.get('demographics', {}),
+            'entries': session.get('medical_entries', []),
+            'language': session.get('language', 'en')
+        }
+    else:
+        return "Patient identifier is required", 400
     
     # Add current date for the record
     current_date = datetime.now().strftime("%B %d, %Y")
     current_year = datetime.now().year
     
-    return render_template('medical-record.html', record=record, current_date=current_date, current_year=current_year)
+    return render_template('medical-form.html', record=record, current_date=current_date, current_year=current_year)
 
 @app.route('/api/export_record', methods=['POST'])
 def export_record():
     """API endpoint for exporting medical records as PDF"""
     try:
+        identifier = request.form.get('identifier')
         user_id = request.form.get('user_id')
+        language = request.form.get('language', 'en')
         export_format = request.form.get('format', 'pdf')
         
-        if not user_id:
-            return jsonify({'status': 'error', 'message': 'User identifier is required'}), 400
+        # Determine record source (file or session)
+        if identifier:
+            json_file = f"medical_record_{identifier}.json"
+            json_file_path = os.path.join(app.root_path, "static", "user_data", json_file)
+            
+            if os.path.exists(json_file_path):
+                with open(json_file_path, 'r') as file:
+                    record = json.load(file)
+                
+                # Add name field for compatibility with PDF generator
+                if 'fname' in record and 'lname' in record:
+                    record['name'] = f"{record['fname']} {record['lname']}"
+                
+                # Update demographics format for compatibility with PDF generator
+                if 'demographics' not in record:
+                    record['demographics'] = {
+                        'sex': record.get('gender', '').lower(),
+                        'dob': record.get('dob', ''),
+                        'height': record.get('height', ''),
+                        'weight': record.get('weight', ''),
+                        'medical_history': ''
+                    }
+            else:
+                return jsonify({'status': 'error', 'message': 'Medical record not found'}), 404
+        elif user_id:
+            # Use session data (legacy method)
+            record = {
+                'name': session.get('user_name', 'Unknown Patient'),
+                'demographics': session.get('demographics', {}),
+                'entries': session.get('medical_entries', [])
+            }
+        else:
+            return jsonify({'status': 'error', 'message': 'Patient identifier is required'}), 400
         
-        # Prepare record data
-        record = {
-            'name': session.get('user_name', 'Unknown Patient'),
-            'demographics': session.get('demographics', {}),
-            'entries': session.get('medical_entries', [])
+        # Create a localized PDF title based on language
+        pdf_titles = {
+            'en': 'Hen Health Medical Record',
+            'es': 'Registro Médico de Hen Health',
+            'fr': 'Dossier Médical de Hen Health',
+            'de': 'Hen Health Krankenakte',
+            'it': 'Cartella Clinica di Hen Health',
+            'pt': 'Registro Médico de Hen Health'
         }
         
         if export_format == 'pdf':
-            # Generate PDF
-            pdf_data = generate_medical_record_pdf(record)
+            # Generate PDF with localized title
+            pdf_title = pdf_titles.get(language, pdf_titles['en'])
+            pdf_data = generate_medical_record_pdf(record, title=pdf_title, language=language)
             
-            # Create a unique filename
-            filename = f"medical_record_{record['name'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+            # Create a unique filename with language code
+            patient_name = record.get('name', 'Unknown_Patient').replace(' ', '_')
+            filename = f"medical_record_{patient_name}_{language}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
             
-            # In a real application, you would save this file and provide a download link
-            # For this example, we'll use a direct response approach
+            # Return the PDF as a download
             response = make_response(pdf_data)
             response.headers['Content-Type'] = 'application/pdf'
             response.headers['Content-Disposition'] = f'attachment; filename={filename}'
             return response
         else:
             # Default to web view if not PDF
-            return jsonify({
-                'status': 'success',
-                'url': f'/medical-record?user_id={user_id}'
-            })
+            if identifier:
+                return jsonify({
+                    'status': 'success',
+                    'url': f'/medical-form?identifier={identifier}&language={language}'
+                })
+            else:
+                return jsonify({
+                    'status': 'success',
+                    'url': f'/medical-form?user_id={user_id}&language={language}'
+                })
     except Exception as e:
         logger.error(f"Error exporting record: {str(e)}")
         return jsonify({'status': 'error', 'message': str(e)}), 500

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hen Health - Medical Webform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .webform-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-field {
+            flex: 1;
+        }
+        
+        .required-field::after {
+            content: "*";
+            color: #933;
+            margin-left: 3px;
+        }
+        
+        .form-submit {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .back-link {
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .language-selection {
+            margin-bottom: 30px;
+        }
+
+        .language-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .language-button {
+            padding: 8px 15px;
+            background-color: #d9cba8;
+            border: 2px solid #8b7355;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .language-button.active {
+            background-color: #8b5a2b;
+            color: #f2e8c9;
+        }
+    </style>
+</head>
+<body class="medieval-theme">
+    <div class="webform-container parchment">
+        
+        <h1>Hen Health</h1>
+        <h2 id="form-title">Medical Information Form</h2>
+        
+        <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> <span id="back-text">Return to Home</span></a>
+        
+        <div class="language-selection">
+            <label id="language-label">Select Language:</label>
+            <div class="language-buttons">
+                <button type="button" class="language-button" data-lang="en">English</button>
+                <button type="button" class="language-button" data-lang="es">Español</button>
+                <button type="button" class="language-button" data-lang="fr">Français</button>
+                <button type="button" class="language-button" data-lang="de">Deutsch</button>
+                <button type="button" class="language-button" data-lang="it">Italiano</button>
+                <button type="button" class="language-button" data-lang="pt">Português</button>
+            </div>
+        </div>
+        
+        <form method="POST" action="{{ url_for('submit_webform') }}">
+            <input type="hidden" id="selected_language" name="language" value="en">
+            
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="first_name" class="required-field" id="first-name-label">First Name</label>
+                    <input type="text" id="first_name" name="first_name" required>
+                </div>
+                <div class="form-field">
+                    <label for="last_name" class="required-field" id="last-name-label">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="dob" class="required-field" id="dob-label">Date of Birth</label>
+                    <input type="date" id="dob" name="dob" required>
+                </div>
+                <div class="form-field">
+                    <label for="gender" class="required-field" id="gender-label">Gender</label>
+                    <select id="gender" name="gender" required>
+                        <option value="">Select...</option>
+                        <option value="Male" id="gender-male">Male</option>
+                        <option value="Female" id="gender-female">Female</option>
+                        <option value="Other" id="gender-other">Other</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="height" id="height-label">Height (cm)</label>
+                    <input type="text" id="height" name="height" placeholder="e.g., 175">
+                </div>
+                <div class="form-field">
+                    <label for="weight" id="weight-label">Weight (kg)</label>
+                    <input type="text" id="weight" name="weight" placeholder="e.g., 70">
+                </div>
+            </div>
+            
+            <div class="form-field">
+                <label for="reason" class="required-field" id="reason-label">Reason for Visit</label>
+                <textarea id="reason" name="reason" rows="5" required placeholder="Please describe your symptoms and concerns..."></textarea>
+            </div>
+            
+            <div class="form-submit">
+                <button type="submit" class="btn-primary" id="submit-button">Submit Information</button>
+            </div>
+        </form>
+        
+        <div class="medieval-footer">
+            <p id="footer-text">By Royal Decree of Hen Health</p>
+        </div>
+    </div>
+    
+    <script>
+        // Language translations
+        const translations = {
+            en: {
+                formTitle: "Medical Information Form",
+                backText: "Return to Home",
+                languageLabel: "Select Language:",
+                firstNameLabel: "First Name",
+                lastNameLabel: "Last Name",
+                dobLabel: "Date of Birth",
+                genderLabel: "Gender",
+                genderMale: "Male",
+                genderFemale: "Female",
+                genderOther: "Other",
+                heightLabel: "Height (cm)",
+                weightLabel: "Weight (kg)",
+                reasonLabel: "Reason for Visit",
+                submitButton: "Submit Information",
+                footerText: "By Royal Decree of Hen Health"
+            },
+            es: {
+                formTitle: "Formulario de Información Médica",
+                backText: "Volver al Inicio",
+                languageLabel: "Seleccionar Idioma:",
+                firstNameLabel: "Nombre",
+                lastNameLabel: "Apellido",
+                dobLabel: "Fecha de Nacimiento",
+                genderLabel: "Género",
+                genderMale: "Masculino",
+                genderFemale: "Femenino",
+                genderOther: "Otro",
+                heightLabel: "Altura (cm)",
+                weightLabel: "Peso (kg)",
+                reasonLabel: "Motivo de la Visita",
+                submitButton: "Enviar Información",
+                footerText: "Por Decreto Real de Hen Health"
+            },
+            fr: {
+                formTitle: "Formulaire d'Information Médicale",
+                backText: "Retour à l'Accueil",
+                languageLabel: "Sélectionner la Langue:",
+                firstNameLabel: "Prénom",
+                lastNameLabel: "Nom",
+                dobLabel: "Date de Naissance",
+                genderLabel: "Genre",
+                genderMale: "Masculin",
+                genderFemale: "Féminin",
+                genderOther: "Autre",
+                heightLabel: "Taille (cm)",
+                weightLabel: "Poids (kg)",
+                reasonLabel: "Motif de la Visite",
+                submitButton: "Soumettre les Informations",
+                footerText: "Par Décret Royal de Hen Health"
+            },
+            de: {
+                formTitle: "Medizinisches Informationsformular",
+                backText: "Zurück zur Startseite",
+                languageLabel: "Sprache auswählen:",
+                firstNameLabel: "Vorname",
+                lastNameLabel: "Nachname",
+                dobLabel: "Geburtsdatum",
+                genderLabel: "Geschlecht",
+                genderMale: "Männlich",
+                genderFemale: "Weiblich",
+                genderOther: "Andere",
+                heightLabel: "Größe (cm)",
+                weightLabel: "Gewicht (kg)",
+                reasonLabel: "Grund des Besuchs",
+                submitButton: "Informationen einreichen",
+                footerText: "Durch Königlichen Erlass von Hen Health"
+            },
+            it: {
+                formTitle: "Modulo di Informazioni Mediche",
+                backText: "Ritorna alla Home",
+                languageLabel: "Seleziona Lingua:",
+                firstNameLabel: "Nome",
+                lastNameLabel: "Cognome",
+                dobLabel: "Data di Nascita",
+                genderLabel: "Genere",
+                genderMale: "Maschile",
+                genderFemale: "Femminile",
+                genderOther: "Altro",
+                heightLabel: "Altezza (cm)",
+                weightLabel: "Peso (kg)",
+                reasonLabel: "Motivo della Visita",
+                submitButton: "Invia Informazioni",
+                footerText: "Per Decreto Reale di Hen Health"
+            },
+            pt: {
+                formTitle: "Formulário de Informação Médica",
+                backText: "Voltar à Página Inicial",
+                languageLabel: "Selecionar Idioma:",
+                firstNameLabel: "Nome",
+                lastNameLabel: "Sobrenome",
+                dobLabel: "Data de Nascimento",
+                genderLabel: "Gênero",
+                genderMale: "Masculino",
+                genderFemale: "Feminino",
+                genderOther: "Outro",
+                heightLabel: "Altura (cm)",
+                weightLabel: "Peso (kg)",
+                reasonLabel: "Motivo da Consulta",
+                submitButton: "Enviar Informações",
+                footerText: "Por Decreto Real de Hen Health"
+            }
+        };
+
+        // Function to update form language
+        function updateLanguage(lang) {
+            if (!translations[lang]) return;
+            
+            const trans = translations[lang];
+            
+            // Update text elements
+            document.getElementById('form-title').textContent = trans.formTitle;
+            document.getElementById('back-text').textContent = trans.backText;
+            document.getElementById('language-label').textContent = trans.languageLabel;
+            document.getElementById('first-name-label').textContent = trans.firstNameLabel;
+            document.getElementById('last-name-label').textContent = trans.lastNameLabel;
+            document.getElementById('dob-label').textContent = trans.dobLabel;
+            document.getElementById('gender-label').textContent = trans.genderLabel;
+            document.getElementById('height-label').textContent = trans.heightLabel;
+            document.getElementById('weight-label').textContent = trans.weightLabel;
+            document.getElementById('reason-label').textContent = trans.reasonLabel;
+            document.getElementById('submit-button').textContent = trans.submitButton;
+            document.getElementById('footer-text').textContent = trans.footerText;
+            
+            // Update gender options
+            document.querySelector('#gender option[value="Male"]').textContent = trans.genderMale;
+            document.querySelector('#gender option[value="Female"]').textContent = trans.genderFemale;
+            document.querySelector('#gender option[value="Other"]').textContent = trans.genderOther;
+            
+            // Update placeholder text for reason field
+            document.getElementById('reason').placeholder = trans.reasonLabel + '...';
+            
+            // Update hidden language field
+            document.getElementById('selected_language').value = lang;
+        }
+        
+        // Get language from localStorage (set in index.html)
+        function getLanguageFromStorage() {
+            return localStorage.getItem('language') || 'en';
+        }
+        
+        // Set active language button
+        function setActiveLanguageButton(lang) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.language-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to selected language button
+            const selectedButton = document.querySelector(`.language-button[data-lang="${lang}"]`);
+            if (selectedButton) {
+                selectedButton.classList.add('active');
+            }
+        }
+        
+        // Initialize form with language from localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const storedLanguage = getLanguageFromStorage();
+            updateLanguage(storedLanguage);
+            setActiveLanguageButton(storedLanguage);
+            
+            // Add event listeners to language buttons
+            document.querySelectorAll('.language-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const lang = this.getAttribute('data-lang');
+                    
+                    // Store language preference
+                    localStorage.setItem('language', lang);
+                    
+                    // Update UI
+                    setActiveLanguageButton(lang);
+                    updateLanguage(lang);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
